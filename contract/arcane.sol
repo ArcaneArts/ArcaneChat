@@ -47,7 +47,7 @@ contract Arcane {
         members[msg.sender] = newMember;
     }
     
-    function sendMessage(address to, bytes message, bytes32 encryption) public onlyMember {
+    function sendMessage(address to, bytes memory message, bytes32 encryption) public onlyMember {
         require(relationships[to][msg.sender] == RelationshipType.Connected);
 
         if (members[to].messageStartBlock == 0) {
