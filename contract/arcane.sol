@@ -1,88 +1,115 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.4.16 <0.9.0;
 
-contract Arcane {
-    event messageSentEvent(address indexed from, address indexed to, bytes message, bytes32 encryption);
+contract LoggingTest {
+    event nameChangeEvent(address indexed from, string newName);
+    event newUserEvent(address indexed from);
+    event messageEvent(address indexed from, address indexed to, string message);
     event addContactEvent(address indexed from, address indexed to);
     event acceptContactEvent(address indexed from, address indexed to);
-    event profileUpdateEvent(address indexed from, bytes32 name, bytes32 avatarUrl);
+    event declineContactEvent(address indexed from, address indexed to);
     event blockContactEvent(address indexed from, address indexed to);
     event unblockContactEvent(address indexed from, address indexed to);
-    
-    enum RelationshipType {NoRelation, Requested, Connected, Blocked}
-    
-    struct Member {
-        bytes32 publicKeyLeft;
-        bytes32 publicKeyRight;
-        bytes32 name;
-        bytes32 avatarUrl;
-        uint messageStartBlock;
-        bool isMember;
-    }
-    
-    mapping (address => mapping (address => RelationshipType)) relationships;
-    mapping (address => Member) public members;
-    
-    function addContact(address addr) public onlyMember {
-        require(relationships[msg.sender][addr] == RelationshipType.NoRelation);
-        require(relationships[addr][msg.sender] == RelationshipType.NoRelation);
-        
-        relationships[msg.sender][addr] = RelationshipType.Requested;
-        emit addContactEvent(msg.sender, addr);
+
+    enum Relation {
+        None,
+        OutgoingRequest,
+        IncomingRequest,
+        Contacts,
+        Blocked
     }
 
-    function acceptContactRequest(address addr) public onlyMember {
-        require(relationships[addr][msg.sender] == RelationshipType.Requested);
-        
-        relationships[msg.sender][addr] = RelationshipType.Connected;
-        relationships[addr][msg.sender] = RelationshipType.Connected;
+    struct User {
+        string name;
+        bool exists;
+    }
 
-        emit acceptContactEvent(msg.sender, addr);
-    }
-    
-    function join(bytes32 publicKeyLeft, bytes32 publicKeyRight) public {
-        require(members[msg.sender].isMember == false);
-        
-        Member memory newMember = Member(publicKeyLeft, publicKeyRight, "", "", 0, true);
-        members[msg.sender] = newMember;
-    }
-    
-    function sendMessage(address to, bytes memory message, bytes32 encryption) public onlyMember {
-        require(relationships[to][msg.sender] == RelationshipType.Connected);
+    mapping (address => mapping (address => Relation)) relations;
+    mapping (address => mapping (address => uint)) lastBlockSend;
+    mapping (address => mapping (address => uint)) lastBlockReceive;
+    mapping (address => User) users;
 
-        if (members[to].messageStartBlock == 0) {
-            members[to].messageStartBlock = block.number;
-        }
-        
-        emit messageSentEvent(msg.sender, to, message, encryption);
+    function createUser(string memory name) public]
+    {
+        require(users[msg.sender].exists == false);
+        users[msg.sender] = User(name, true);
+        emit newUserEvent(msg.sender);
+        emit nameChangeEvent(msg.sender, name);
     }
-    
-    function blockMessagesFrom(address from) public onlyMember {
-        require(relationships[msg.sender][from] == RelationshipType.Connected);
 
-        relationships[msg.sender][from] = RelationshipType.Blocked;
-        emit blockContactEvent(msg.sender, from);
+    function changeName(string memory name) public forusers 
+    {
+        users[msg.sender].name = name;
+        emit nameChangeEvent(msg.sender, name);
     }
-    
-    function unblockMessagesFrom(address from) public onlyMember {
-        require(relationships[msg.sender][from] == RelationshipType.Blocked);
 
-        relationships[msg.sender][from] = RelationshipType.Connected;
-        emit unblockContactEvent(msg.sender, from);
+    function sendMessage(address to, string memory message) public forusers
+    {
+        require(relations[msg.sender][to] == Relation.Contacts);
+        require(relations[to][msg.sender] == Relation.Contacts);
+        lastBlockSend[msg.sender][to] = block.number;
+        lastBlockReceive[to][msg.sender] = block.number;
+        emit messageEvent(msg.sender, to, message);
     }
-    
-    function updateProfile(bytes32 name, bytes32 avatarUrl) public onlyMember {
-        members[msg.sender].name = name;
-        members[msg.sender].avatarUrl = avatarUrl;
-        emit profileUpdateEvent(msg.sender, name, avatarUrl);
+
+    function addContact(address a) public forusers 
+    {
+        require(relations[msg.sender][a] == Relation.None && relations[a][msg.sender] == Relation.None);
+        relations[msg.sender][a] = Relation.OutgoingRequest;
+        relations[a][msg.sender] = Relation.IncomingRequest;
+        emit addContactEvent(msg.sender, a);
     }
-    
-    modifier onlyMember() {
-        require(members[msg.sender].isMember == true);
+
+    function acceptContact(address a) public forusers
+    {
+        require(relations[msg.sender][a] == Relation.IncomingRequest && relations[a][msg.sender] == Relation.OutgoingRequest);
+        relations[msg.sender][a] = Relation.Contacts;
+        relations[a][msg.sender] = Relation.Contacts;
+        emit acceptContactEvent(msg.sender, a);
+    }
+
+    function declineContact(address a) public forusers
+    {
+        require(relations[msg.sender][a] == Relation.IncomingRequest && relations[a][msg.sender] == Relation.OutgoingRequest);
+        relations[msg.sender][a] = Relation.None;
+        relations[a][msg.sender] = Relation.None;
+        emit declineContactEvent(msg.sender, a);
+    }
+
+    function blockContact(address a) public forusers
+    {
+        relations[msg.sender][a] = Relation.Blocked;
+        relations[a][msg.sender] = Relation.None;
+        emit blockContactEvent(msg.sender, a);
+    }
+
+    function unblockContact(address a) public forusers
+    {
+        relations[msg.sender][a] = Relation.None;
+        emit unblockContactEvent(msg.sender, a);
+    }
+    modifier forusers() {
+        require(users[msg.sender].exists);
         _;
     }
-    
-    function getRelationWith(address a) public view onlyMember returns (RelationshipType) {
-        return relationships[msg.sender][a];
+
+    function getRelation(address a) public forusers view returns (Relation) {
+        return relations[msg.sender][a];
+    }
+
+    function getLastSendingBlock(address a) public forusers view returns (uint) {
+        return lastBlockSend[msg.sender][a];
+    }
+
+    function getLastReceivingBlock(address a) public forusers view returns (uint) {
+        return lastBlockReceive[msg.sender][a];
+    }
+
+    function getName() public forusers view returns (string memory) {
+        return users[msg.sender].name;
+    }
+
+    function isUser() public view returns (bool) {
+        return users[msg.sender].exists;
     }
 }
