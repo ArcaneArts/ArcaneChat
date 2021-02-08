@@ -35,6 +35,7 @@ contract LoggingTest {
         users[msg.sender] = User(name, true);
         emit newUserEvent(msg.sender);
         emit nameChangeEvent(msg.sender, name);
+        relations[msg.sender][msg.sender] = Relation.Contacts;
     }
 
     function changeName(string memory name) public forusers 
