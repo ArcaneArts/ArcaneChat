@@ -29,7 +29,7 @@ contract LoggingTest {
     mapping (address => mapping (address => uint)) lastBlockReceive;
     mapping (address => User) users;
 
-    function createUser(string memory name) public]
+    function createUser(string memory name) public
     {
         require(users[msg.sender].exists == false);
         users[msg.sender] = User(name, true);
