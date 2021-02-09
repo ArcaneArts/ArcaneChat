@@ -1,9 +1,31 @@
 import 'dart:math';
 
+import 'package:arcane_chat/arcane_storage.dart';
+import 'package:arcane_chat/satchel.dart';
 import 'package:web3dart/credentials.dart';
 
-class WalletGenerator {
-  Future<Wallet> generate(List<int> seedlings, String password) async {
+class WalletManager {
+  static List<Satchel> getSatchels() {
+    List<Satchel> s = List<Satchel>();
+
+    ArcaneStorage.getWallets().values.forEach((element) {
+      try {
+        s.add(Satchel.fromJson(element));
+      } catch (e) {}
+    });
+
+    return s;
+  }
+
+  static void setSatchel(Satchel s) {
+    ArcaneStorage.getWallets().put(s.id, s.toJsonString());
+  }
+
+  static Satchel getSatchel(String id) {
+    return Satchel.fromJson(ArcaneStorage.getWallets().get(id));
+  }
+
+  static Future<Wallet> generate(List<int> seedlings, String password) async {
     int c = seedlings.length;
     int ma = 9223372036854775807;
     int mi = -9223372036854775808;
