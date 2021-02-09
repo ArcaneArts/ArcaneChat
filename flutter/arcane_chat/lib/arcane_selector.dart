@@ -1,4 +1,7 @@
+import 'package:arcane_chat/arcane_unlocker.dart';
+import 'package:arcane_chat/satchel.dart';
 import 'package:arcane_chat/satchel_creator.dart';
+import 'package:arcane_chat/wallet_manager.dart';
 import 'package:flutter/material.dart';
 
 class ArcaneAccountSelector extends StatefulWidget {
@@ -9,6 +12,7 @@ class ArcaneAccountSelector extends StatefulWidget {
 class _ArcaneAccountSelectorState extends State<ArcaneAccountSelector> {
   @override
   Widget build(BuildContext context) {
+    List<Satchel> satchels = WalletManager.getSatchels();
     Size s = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
@@ -22,6 +26,22 @@ class _ArcaneAccountSelectorState extends State<ArcaneAccountSelector> {
                   padding: EdgeInsets.zero,
                   shrinkWrap: true,
                   children: [
+                    ListView.builder(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      itemCount: satchels.length,
+                      itemBuilder: (context, pos) => ListTile(
+                        leading: Icon(Icons.account_balance_wallet_rounded),
+                        title: Text(satchels[pos].name),
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ArcaneSatchelUnlocker(
+                                      satchel: satchels[pos],
+                                    ))),
+                        subtitle: Text(satchels[pos].id),
+                      ),
+                    ),
                     Padding(
                       padding: EdgeInsets.only(left: 14, right: 14),
                       child: Container(
@@ -33,7 +53,7 @@ class _ArcaneAccountSelectorState extends State<ArcaneAccountSelector> {
                       leading: Icon(Icons.add),
                       title: Text("Create Account"),
                       subtitle: Text("Create a new Arcane Wallet & Account"),
-                      onTap: () => Navigator.push(
+                      onTap: () => Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                               builder: (context) => SatchelCreator())),
