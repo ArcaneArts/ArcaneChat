@@ -31,7 +31,7 @@ class Satchel {
       LZString.decompressFromEncodedURIComponentSync(data);
 
   void setEncodedJson(String json) =>
-      LZString.compressToEncodedURIComponentSync(data);
+      data = LZString.compressToEncodedURIComponentSync(json);
 
   void setWallet(Wallet wallet) => setEncodedJson(wallet.toJson());
 
