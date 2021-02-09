@@ -7,6 +7,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  hive: ^1.4.4+1
+  hive_flutter: ^0.3.1
+  path_provider: ^1.6.27
   web3dart:
     git: https://github.com/simolus3/web3dart.git
 dev_dependencies:
