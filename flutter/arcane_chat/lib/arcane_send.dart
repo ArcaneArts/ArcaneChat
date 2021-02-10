@@ -34,6 +34,7 @@ class _ArcaneSendState extends State<ArcaneSend> {
               child: Padding(
                 child: Container(
                   width: 350,
+                  height: 425,
                   child: Stack(
                     fit: StackFit.passthrough,
                     children: [
@@ -83,45 +84,48 @@ class _ArcaneSendState extends State<ArcaneSend> {
                                       size: 86,
                                     )),
                                     Flexible(
+                                        flex: 0,
                                         child: TextField(
-                                      onChanged: (a) => setState(() {}),
-                                      controller: tc,
-                                      decoration: InputDecoration(
-                                          hintText:
-                                              "Wallet Address (0x123....abc)"),
-                                    )),
+                                          onChanged: (a) => setState(() {}),
+                                          controller: tc,
+                                          decoration: InputDecoration(
+                                              hintText:
+                                                  "Wallet Address (0x123....abc)"),
+                                        )),
                                     Flexible(
+                                        flex: 0,
                                         child: TextField(
-                                      onChanged: (a) => setState(() {
-                                        setMana = int.tryParse(
-                                                a.replaceAll(",", "")) ??
-                                            0;
-                                        if (setMana > maxMana) {
-                                          tca.text = (nf.format(maxMana));
-                                          tca.selection =
-                                              TextSelection.fromPosition(
-                                                  TextPosition(
-                                                      offset: tca.text.length));
-                                        }
-                                      }),
-                                      controller: tca,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.allow(
-                                            RegExp(r'\d+')),
-                                        // Fit the validating format.
-                                        //fazer o formater para dinheiro
-                                        CurrencyInputFormatter()
-                                      ],
-                                      style: TextStyle(fontSize: 48),
-                                      keyboardType:
-                                          TextInputType.numberWithOptions(
-                                              signed: false, decimal: true),
-                                      decoration: InputDecoration(
-                                          helperText:
-                                              "You can send up to ${nf.format(maxMana)} Mana",
-                                          hintText: "0",
-                                          suffix: Text("Mana")),
-                                    )),
+                                          onChanged: (a) => setState(() {
+                                            setMana = int.tryParse(
+                                                    a.replaceAll(",", "")) ??
+                                                0;
+                                            if (setMana > maxMana) {
+                                              tca.text = (nf.format(maxMana));
+                                              tca.selection =
+                                                  TextSelection.fromPosition(
+                                                      TextPosition(
+                                                          offset:
+                                                              tca.text.length));
+                                            }
+                                          }),
+                                          controller: tca,
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.allow(
+                                                RegExp(r'\d+')),
+                                            // Fit the validating format.
+                                            //fazer o formater para dinheiro
+                                            CurrencyInputFormatter()
+                                          ],
+                                          style: TextStyle(fontSize: 48),
+                                          keyboardType:
+                                              TextInputType.numberWithOptions(
+                                                  signed: false, decimal: true),
+                                          decoration: InputDecoration(
+                                              helperText:
+                                                  "You can send up to ${nf.format(maxMana)} Mana",
+                                              hintText: "0",
+                                              suffix: Text("Mana")),
+                                        )),
                                     Flexible(
                                         child: ListTile(
                                       title: Text("Transaction Fee"),

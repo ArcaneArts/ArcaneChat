@@ -29,6 +29,7 @@ class _ArcaneWalletViewState extends State<ArcaneWalletView> {
                 child: Card(
                   child: Container(
                     width: 350,
+                    height: 215,
                     child: Padding(
                       padding: EdgeInsets.all(14),
                       child: Stack(
@@ -52,10 +53,11 @@ class _ArcaneWalletViewState extends State<ArcaneWalletView> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Flexible(
+                                      flex: 0,
                                       child: Icon(
-                                    Icons.account_balance_wallet,
-                                    size: 82,
-                                  )),
+                                        Icons.account_balance_wallet,
+                                        size: 82,
+                                      )),
                                   Flexible(
                                       child: Text(
                                     "${nf.format(snap.data.getMana())} Mana",

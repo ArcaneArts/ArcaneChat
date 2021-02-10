@@ -25,6 +25,7 @@ class _ArcaneReceiveState extends State<ArcaneReceive> {
             child: Card(
               child: Container(
                 width: 350,
+                height: 160,
                 child: Stack(
                   fit: StackFit.passthrough,
                   children: [
@@ -36,43 +37,39 @@ class _ArcaneReceiveState extends State<ArcaneReceive> {
                     Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.save_alt_rounded,
-                          size: 86,
-                        ),
-                        Padding(
-                          child: Container(
-                            height: 0.3,
-                            color: Theme.of(context).textTheme.subtitle1.color,
-                          ),
-                          padding: EdgeInsets.only(
-                              left: 14, right: 14, top: 14, bottom: 4),
-                        ),
                         Flexible(
+                            flex: 0,
+                            child: Icon(
+                              Icons.save_alt_rounded,
+                              size: 86,
+                            )),
+                        Flexible(
+                            flex: 0,
                             child: FutureBuilder<EthereumAddress>(
-                          future: widget.wallet.getAddress(),
-                          builder: (context, snap) {
-                            if (!snap.hasData) {
-                              return Text("");
-                            }
+                              future: widget.wallet.getAddress(),
+                              builder: (context, snap) {
+                                if (!snap.hasData) {
+                                  return Text("");
+                                }
 
-                            return ListTile(
-                              title: Text("Copy Address"),
-                              subtitle: Text(
-                                snap.data.hex,
-                                style: TextStyle(fontSize: 11),
-                              ),
-                              onTap: () => Clipboard.setData(
-                                      ClipboardData(text: snap.data.hex))
-                                  .then((value) => ScaffoldMessenger.of(context)
-                                      .showSnackBar(SnackBar(
-                                          content: Text(
-                                              "Copied Address to Clipboard")))),
-                              leading:
-                                  Icon(Icons.account_balance_wallet_rounded),
-                            );
-                          },
-                        )),
+                                return ListTile(
+                                  title: Text("Copy Address"),
+                                  subtitle: Text(
+                                    snap.data.hex,
+                                    style: TextStyle(fontSize: 11),
+                                  ),
+                                  onTap: () => Clipboard.setData(
+                                          ClipboardData(text: snap.data.hex))
+                                      .then((value) => ScaffoldMessenger.of(
+                                              context)
+                                          .showSnackBar(SnackBar(
+                                              content: Text(
+                                                  "Copied Address to Clipboard")))),
+                                  leading: Icon(
+                                      Icons.account_balance_wallet_rounded),
+                                );
+                              },
+                            )),
                       ],
                     )
                   ],
