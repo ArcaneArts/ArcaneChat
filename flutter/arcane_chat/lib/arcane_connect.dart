@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:arcane_chat/arcane_contractor.dart';
 import 'package:arcane_chat/constant.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
@@ -8,13 +9,7 @@ class ArcaneConnect {
   static Web3Client _client;
   static double lastPrice;
 
-  static void findContacts(Wallet wallet) {
-    wallet.privateKey.extractAddress().then((value) => connect().getLogs(
-        FilterOptions(
-            address: value,
-            fromBlock: BlockNum.genesis(),
-            toBlock: BlockNum.current())));
-  }
+  static ArcaneContract getContract() => ArcaneContract.connect();
 
   static Web3Client connect() {
     if (_client == null) {
