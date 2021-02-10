@@ -22,6 +22,7 @@ contract LoggingTest {
     struct User {
         string name;
         bool exists;
+        uint signupBlock;
     }
 
     mapping (address => mapping (address => Relation)) relations;
@@ -31,7 +32,7 @@ contract LoggingTest {
 
     function createUser(string memory name) public {
         require(users[msg.sender].exists == false);
-        users[msg.sender] = User(name, true);
+        users[msg.sender] = User(name, true, block.number);
         emit newUserEvent(msg.sender);
         emit nameChangeEvent(msg.sender, name);
         relations[msg.sender][msg.sender] = Relation.Contacts;
@@ -89,6 +90,10 @@ contract LoggingTest {
 
     function getRelation(address a) public forusers view returns (Relation) {
         return relations[msg.sender][a];
+    }
+
+    function getSignupBlock() public forusers view returns (uint) {
+        return users[msg.sender].signupBlock;
     }
 
     function getLastSendingBlock(address a) public forusers view returns (uint) {
