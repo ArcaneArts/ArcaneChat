@@ -62,26 +62,6 @@ class _ArcaneWalletViewState extends State<ArcaneWalletView> {
                                     style: TextStyle(fontSize: 36),
                                   )),
                                   Flexible(
-                                      child: Text(
-                                    "${nf.format(snap.data.getEther())} ETH",
-                                    style: TextStyle(
-                                        fontSize: 21,
-                                        color: Theme.of(context)
-                                            .textTheme
-                                            .subtitle1
-                                            .color),
-                                  )),
-                                  Flexible(
-                                      child: Text(
-                                    "${nf.format(snap.data.getUsd())} USD",
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        color: Theme.of(context)
-                                            .textTheme
-                                            .subtitle1
-                                            .color),
-                                  )),
-                                  Flexible(
                                       child: Padding(
                                     child: Container(
                                       height: 0.3,
@@ -116,7 +96,10 @@ class _ArcaneWalletViewState extends State<ArcaneWalletView> {
                                               context,
                                               MaterialPageRoute(
                                                   builder: (context) =>
-                                                      ArcaneSend()))),
+                                                      ArcaneSend(
+                                                        wallet: widget.wallet,
+                                                        satchel: widget.satchel,
+                                                      )))),
                                     ],
                                   ))
                                 ],
