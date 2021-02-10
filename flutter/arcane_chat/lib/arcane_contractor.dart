@@ -31,6 +31,7 @@ class ArcaneContract {
   ContractFunction blockContactFunction;
   ContractFunction unblockContactFunction;
   ContractFunction getRelationFunction;
+  ContractFunction isUserFunction;
   ContractFunction getNameFunction;
   ContractFunction getSignupBlockFunction;
   ContractFunction getLastSendingBlockFunction;
@@ -53,6 +54,7 @@ class ArcaneContract {
     c.changeNameFunction = c.contract.function("changeName");
     c.sendMessageFunction = c.contract.function("sendMessage");
     c.getNameFunction = c.contract.function("getName");
+    c.isUserFunction = c.contract.function("isUser");
     c.addContactFunction = c.contract.function("addContact");
     c.acceptContactFunction = c.contract.function("acceptContact");
     c.declineContactFunction = c.contract.function("declineContact");
@@ -162,6 +164,11 @@ class ArcaneContract {
           contract: contract,
           function: getNameFunction,
           params: [a]).then((value) => value.toString());
+
+  Future<bool> isUser(EthereumAddress a) async => ArcaneConnect.connect().call(
+      contract: contract,
+      function: isUserFunction,
+      params: [a]).then((value) => value.toString() == "true");
 
   Future<ArcaneRelationship> getRelation(
           EthereumAddress me, EthereumAddress other) async =>
