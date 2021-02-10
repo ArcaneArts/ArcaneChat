@@ -51,8 +51,9 @@ class _ArcaneAccountSelectorState extends State<ArcaneAccountSelector> {
                     ),
                     ListTile(
                       leading: Icon(Icons.add),
-                      title: Text("Create Account"),
-                      subtitle: Text("Create a new Arcane Wallet & Account"),
+                      title: Text("Create Satchel"),
+                      subtitle:
+                          Text("Satchels contain a wallet & conversations."),
                       onTap: () => Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
@@ -60,8 +61,8 @@ class _ArcaneAccountSelectorState extends State<ArcaneAccountSelector> {
                     ),
                     ListTile(
                       leading: Icon(Icons.save_alt),
-                      title: Text("Import Account"),
-                      subtitle: Text("Import an existing Account"),
+                      title: Text("Import Satchel"),
+                      subtitle: Text("Import an existing Satchel"),
                       onTap: () {},
                     )
                   ],
