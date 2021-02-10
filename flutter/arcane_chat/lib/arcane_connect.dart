@@ -8,6 +8,14 @@ class ArcaneConnect {
   static Web3Client _client;
   static double lastPrice;
 
+  static void findContacts(Wallet wallet) {
+    wallet.privateKey.extractAddress().then((value) => connect().getLogs(
+        FilterOptions(
+            address: value,
+            fromBlock: BlockNum.genesis(),
+            toBlock: BlockNum.current())));
+  }
+
   static Web3Client connect() {
     if (_client == null) {
       _client = new Web3Client(Constant.INFURA_API, Client());
