@@ -8,11 +8,6 @@ void main() {
   ArcaneStorage.init().then((value) => runApp(Arcane()));
 }
 
-class Constant {
-  static final String endpoint =
-      "https://kovan.infura.io/v3/a7c468d6a0914a10a94705cd83eddcf3";
-}
-
 class Arcane extends StatefulWidget {
   Arcane({Key key}) : super(key: key);
 
@@ -29,6 +24,7 @@ class _ArcaneState extends State<Arcane> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: "Arcane",
       theme: ThemeData(
           appBarTheme: AppBarTheme(
