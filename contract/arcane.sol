@@ -31,7 +31,7 @@ contract LoggingTest {
     mapping (address => User) users;
 
     function createUser(string memory name) public {
-        require(users[msg.sender].exists == false);
+        require(users[msg.sender].exists == false, "You are already a member.");
         users[msg.sender] = User(name, true, block.number);
         emit newUserEvent(msg.sender);
         emit nameChangeEvent(msg.sender, name);
@@ -44,71 +44,71 @@ contract LoggingTest {
     }
 
     function sendMessage(address to, string memory message) public forusers {
-        require(relations[msg.sender][to] == Relation.Contacts);
-        require(relations[to][msg.sender] == Relation.Contacts);
+        require(relations[msg.sender][to] == Relation.Contacts, "the recipient is not in your contacts.");
+        require(relations[to][msg.sender] == Relation.Contacts, "the recipient does not have you in your contacts.");
         lastBlockSend[msg.sender][to] = block.number;
         lastBlockReceive[to][msg.sender] = block.number;
         emit messageEvent(msg.sender, to, message);
     }
 
-    function addContact(address a) public forusers  {
-        require(relations[msg.sender][a] == Relation.None && relations[a][msg.sender] == Relation.None);
-        relations[msg.sender][a] = Relation.OutgoingRequest;
-        relations[a][msg.sender] = Relation.IncomingRequest;
-        emit addContactEvent(msg.sender, a);
+    function addContact(address user) public forusers  {
+        require(relations[msg.sender][user] == Relation.None && relations[user][msg.sender] == Relation.None, "You or the recipient are already contacts, or pending contacts, or blocking.");
+        relations[msg.sender][user] = Relation.OutgoingRequest;
+        relations[user][msg.sender] = Relation.IncomingRequest;
+        emit addContactEvent(msg.sender, user);
     }
 
-    function acceptContact(address a) public forusers {
-        require(relations[msg.sender][a] == Relation.IncomingRequest && relations[a][msg.sender] == Relation.OutgoingRequest);
-        relations[msg.sender][a] = Relation.Contacts;
-        relations[a][msg.sender] = Relation.Contacts;
-        emit acceptContactEvent(msg.sender, a);
+    function acceptContact(address user) public forusers {
+        require(relations[msg.sender][user] == Relation.IncomingRequest && relations[user][msg.sender] == Relation.OutgoingRequest, "The recipient does not have an outgoing contact request.");
+        relations[msg.sender][user] = Relation.Contacts;
+        relations[user][msg.sender] = Relation.Contacts;
+        emit acceptContactEvent(msg.sender, user);
     }
 
-    function declineContact(address a) public forusers {
-        require(relations[msg.sender][a] == Relation.IncomingRequest && relations[a][msg.sender] == Relation.OutgoingRequest);
-        relations[msg.sender][a] = Relation.None;
-        relations[a][msg.sender] = Relation.None;
-        emit declineContactEvent(msg.sender, a);
+    function declineContact(address user) public forusers {
+        require(relations[msg.sender][user] == Relation.IncomingRequest && relations[user][msg.sender] == Relation.OutgoingRequest, "The recipient does not have an outgoing contact request.");
+        relations[msg.sender][user] = Relation.None;
+        relations[user][msg.sender] = Relation.None;
+        emit declineContactEvent(msg.sender, user);
     }
 
-    function blockContact(address a) public forusers {
-        relations[msg.sender][a] = Relation.Blocked;
-        relations[a][msg.sender] = Relation.None;
-        emit blockContactEvent(msg.sender, a);
+    function blockContact(address user) public forusers {
+        relations[msg.sender][user] = Relation.Blocked;
+        relations[user][msg.sender] = Relation.None;
+        emit blockContactEvent(msg.sender, user);
     }
 
-    function unblockContact(address a) public forusers {
-        relations[msg.sender][a] = Relation.None;
-        emit unblockContactEvent(msg.sender, a);
+    function unblockContact(address user) public forusers {
+        relations[msg.sender][user] = Relation.None;
+        emit unblockContactEvent(msg.sender, user);
     }
 
     modifier forusers() {
-        require(users[msg.sender].exists);
+        require(users[msg.sender].exists, "You are not a user of arcane. Use createUser");
         _;
     }
 
-    function getRelation(address a) public forusers view returns (Relation) {
-        return relations[msg.sender][a];
+    function getRelation(address me, address other) public view returns (Relation) {
+        return relations[me][other];
     }
 
-    function getSignupBlock() public forusers view returns (uint) {
-        return users[msg.sender].signupBlock;
+    function getSignupBlock(address me) public view returns (uint) {
+        return users[me].signupBlock;
     }
 
-    function getLastSendingBlock(address a) public forusers view returns (uint) {
-        return lastBlockSend[msg.sender][a];
+    function getLastSendingBlock(address me, address other) public view returns (uint) {
+        return lastBlockSend[me][other];
     }
 
-    function getLastReceivingBlock(address a) public forusers view returns (uint) {
-        return lastBlockReceive[msg.sender][a];
+    function getLastReceivingBlock(address me, address other) public view returns (uint) {
+        return lastBlockReceive[me][other];
     }
 
-    function getName() public forusers view returns (string memory) {
-        return users[msg.sender].name;
+    function getName(address a) public view returns (string memory) {
+        return users[a].name;
     }
 
-    function isUser() public view returns (bool) {
-        return users[msg.sender].exists;
+    function isUser(address a) public view returns (bool) {
+        return users[a].exists;
     }
 }
