@@ -6,6 +6,7 @@ import 'package:web3dart/web3dart.dart';
 
 class ArcaneConnect {
   static Web3Client _client;
+  static double lastPrice;
 
   static Web3Client connect() {
     if (_client == null) {
@@ -15,14 +16,16 @@ class ArcaneConnect {
     return _client;
   }
 
-  static Future<double> getUSDPrice() async => Client()
+  static Future<double> getUSDPrice() async =>
+      lastPrice ??
+      Client()
           .get(
               "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD&api_key=${Constant.CRYPTO_COMPARE_API_KEY}")
           .then((value) {
         print("Got result ${value.body}");
-        return double.tryParse(
+        return lastPrice = (double.tryParse(
                 (jsonDecode(value.body) as Map<String, dynamic>)["USD"]
                     .toString()) ??
-            2;
+            0);
       });
 }
