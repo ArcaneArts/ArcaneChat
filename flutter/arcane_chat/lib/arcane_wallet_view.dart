@@ -59,10 +59,11 @@ class _ArcaneWalletViewState extends State<ArcaneWalletView> {
                                         size: 82,
                                       )),
                                   Flexible(
+                                      flex: 0,
                                       child: Text(
-                                    "${nf.format(snap.data.getMana())} Mana",
-                                    style: TextStyle(fontSize: 36),
-                                  )),
+                                        "${nf.format(snap.data.getMana().toInt())} Mana",
+                                        style: TextStyle(fontSize: 36),
+                                      )),
                                   Flexible(
                                       child: Padding(
                                     child: Container(
@@ -91,7 +92,8 @@ class _ArcaneWalletViewState extends State<ArcaneWalletView> {
                                                       ArcaneReceive(
                                                         satchel: widget.satchel,
                                                         wallet: widget.wallet,
-                                                      )))),
+                                                      ))).then(
+                                              (value) => setState(() {}))),
                                       IconButton(
                                           icon: Icon(Icons.send),
                                           onPressed: () => Navigator.push(
@@ -101,7 +103,8 @@ class _ArcaneWalletViewState extends State<ArcaneWalletView> {
                                                       ArcaneSend(
                                                         wallet: widget.wallet,
                                                         satchel: widget.satchel,
-                                                      )))),
+                                                      ))).then(
+                                              (value) => setState(() {}))),
                                     ],
                                   ))
                                 ],
