@@ -1,3 +1,4 @@
+import 'package:arcane_chat/arcane_connect.dart';
 import 'package:arcane_chat/arcane_unlocker.dart';
 import 'package:arcane_chat/satchel.dart';
 import 'package:arcane_chat/satchel_creator.dart';
@@ -33,12 +34,15 @@ class _ArcaneAccountSelectorState extends State<ArcaneAccountSelector> {
                       itemBuilder: (context, pos) => ListTile(
                         leading: Icon(Icons.account_balance_wallet_rounded),
                         title: Text(satchels[pos].name),
-                        onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ArcaneSatchelUnlocker(
-                                      satchel: satchels[pos],
-                                    ))),
+                        onTap: () {
+                          ArcaneConnect.reset();
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ArcaneSatchelUnlocker(
+                                        satchel: satchels[pos],
+                                      )));
+                        },
                         subtitle: Text(satchels[pos].id),
                       ),
                     ),
