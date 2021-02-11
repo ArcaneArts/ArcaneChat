@@ -1,4 +1,5 @@
 import 'package:arcane_chat/arcane_connect.dart';
+import 'package:arcane_chat/arcane_tx_waiter.dart';
 import 'package:arcane_chat/arcaneamount.dart';
 import 'package:arcane_chat/constant.dart';
 import 'package:arcane_chat/satchel.dart';
@@ -67,11 +68,12 @@ class _ArcaneSendState extends State<ArcaneSend> {
                                         tca.value.text.replaceAll(",", "")) ??
                                     0;
                                 int gasMana = (gas.data
-                                            .getValueInUnit(EtherUnit.ether)
-                                            .toDouble() *
-                                        Constant.GAS_LIMIT_SEND.toDouble() *
-                                        Constant.MANA_PER_ETH)
-                                    .toInt();
+                                                .getValueInUnit(EtherUnit.ether)
+                                                .toDouble() *
+                                            Constant.GAS_LIMIT_SEND.toDouble() *
+                                            Constant.MANA_PER_ETH)
+                                        .toInt() +
+                                    3;
                                 int maxMana = myMana - gasMana;
                                 int totalManaCost = setMana + gasMana;
 
@@ -147,22 +149,36 @@ class _ArcaneSendState extends State<ArcaneSend> {
                                       children: [
                                         TextButton(
                                           child: Text(
-                                              "Send ${nf.format(totalManaCost)} Mana"),
+                                              "Send ${nf.format(setMana)} Mana"),
                                           onPressed: tc.text.length == 42 &&
                                                   setMana > 0 &&
                                                   totalManaCost <= myMana
-                                              ? () => sendMana(
-                                                          gasPrice: gas.data,
-                                                          address: tc.text,
-                                                          manaSend: setMana)
-                                                      .then((value) {
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(SnackBar(
-                                                            content:
-                                                                Text(value)));
+                                              ? () => Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              ArcaneTxWaiter(
+                                                                waiter: ArcaneConnect.waitForTx(sendMana(
+                                                                    gasPrice: gas
+                                                                        .data,
+                                                                    address:
+                                                                        tc.text,
+                                                                    manaSend:
+                                                                        setMana)),
+                                                              ))).then((value) {
+                                                    if (value) {
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(SnackBar(
+                                                              content: Text(
+                                                                  "Sent ${nf.format(setMana)} Mana")));
+                                                    }
                                                     Navigator.pop(context);
-                                                    print("Value was '$value'");
+                                                  }).onError(
+                                                      (error, stackTrace) {
+                                                    print("error " +
+                                                        error.toString());
+                                                    return null;
                                                   })
                                               : null,
                                         )
@@ -189,22 +205,31 @@ class _ArcaneSendState extends State<ArcaneSend> {
   Future<String> sendMana(
       {String address, int manaSend, EtherAmount gasPrice}) {
     return widget.wallet.getAddress().then((value) {
+      print(value);
       int gwei = EtherAmount.fromUnitAndValue(EtherUnit.ether, 1)
           .getValueInUnit(EtherUnit.gwei)
           .toInt();
-      double sendEth =
-          (manaSend.toDouble() / Constant.MANA_PER_ETH) * gwei.toDouble();
-
-      return ArcaneConnect.connect().sendTransaction(
-          widget.wallet.privateKey,
-          Transaction(
-              gasPrice: gasPrice,
-              value:
-                  EtherAmount.fromUnitAndValue(EtherUnit.gwei, sendEth.toInt()),
-              maxGas: Constant.GAS_LIMIT_SEND.toInt(),
-              from: value,
-              to: EthereumAddress.fromHex(address)),
-          chainId: Constant.CHAIN_ID);
+      EtherAmount sendEth = EtherAmount.fromUnitAndValue(
+          EtherUnit.gwei,
+          ((manaSend.toDouble() / Constant.MANA_PER_ETH) * gwei.toDouble())
+              .toInt());
+      print(
+          "Eth is ${sendEth.getValueInUnit(EtherUnit.ether)} ETH or ${sendEth.getValueInUnit(EtherUnit.ether) * Constant.MANA_PER_ETH} MANA");
+      return ArcaneConnect.connect()
+          .sendTransaction(
+              widget.wallet.privateKey,
+              Transaction(
+                  gasPrice: gasPrice,
+                  value: sendEth,
+                  maxGas: Constant.GAS_LIMIT_SEND.toInt(),
+                  from: value,
+                  to: EthereumAddress.fromHex(address)),
+              chainId: Constant.CHAIN_ID)
+          .catchError((v) {
+        print(v.toString());
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(v.toString())));
+      });
     });
   }
 }
