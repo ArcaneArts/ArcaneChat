@@ -20,8 +20,8 @@ class ArcaneSend extends StatefulWidget {
 }
 
 class _ArcaneSendState extends State<ArcaneSend> {
-  TextEditingController tc = TextEditingController();
-  TextEditingController tca = TextEditingController();
+  TextEditingController tc = TextEditingController(text: "");
+  TextEditingController tca = TextEditingController(text: "");
 
   @override
   Widget build(BuildContext context) {
@@ -65,8 +65,8 @@ class _ArcaneSendState extends State<ArcaneSend> {
                                 }
                                 int myMana = amount.data.getMana().toInt();
                                 int setMana = int.tryParse(
-                                        tca.value.text.replaceAll(",", "")) ??
-                                    0;
+                                    tca.value.text.replaceAll(",", ""));
+                                setMana = setMana == null ? 0 : setMana;
                                 int gasMana = (gas.data
                                                 .getValueInUnit(EtherUnit.ether)
                                                 .toDouble() *
@@ -150,7 +150,8 @@ class _ArcaneSendState extends State<ArcaneSend> {
                                         TextButton(
                                           child: Text(
                                               "Send ${nf.format(setMana)} Mana"),
-                                          onPressed: tc.text.length == 42 &&
+                                          onPressed: (tc.text.length ?? 0) ==
+                                                      42 &&
                                                   setMana > 0 &&
                                                   totalManaCost <= myMana
                                               ? () => Navigator.push(

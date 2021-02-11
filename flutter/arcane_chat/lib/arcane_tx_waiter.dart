@@ -1,3 +1,4 @@
+import 'package:arcane_chat/arcane_connect.dart';
 import 'package:flutter/material.dart';
 
 class ArcaneTxWaiter<T> extends StatefulWidget {
@@ -12,7 +13,11 @@ class ArcaneTxWaiter<T> extends StatefulWidget {
 class _ArcaneTxWaiterState<T> extends State<ArcaneTxWaiter<T>> {
   @override
   Widget build(BuildContext context) {
-    widget.waiter.then((value) => Navigator.pop(context, value));
+    widget.waiter.then((value) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Used ${ArcaneConnect.lastSpent} Mana")));
+      Navigator.pop(context, value);
+    });
 
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,

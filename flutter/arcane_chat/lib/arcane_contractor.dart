@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:arcane_chat/arcane_connect.dart';
+import 'package:arcane_chat/arcane_message.dart';
 import 'package:arcane_chat/constant.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:web3dart/contracts.dart';
@@ -9,6 +10,8 @@ import 'package:web3dart/credentials.dart';
 import 'package:web3dart/web3dart.dart';
 
 typedef BlockWalkerProgress(double progress);
+
+typedef MessageCallback(ArcaneMessage msg);
 
 enum ArcaneRelationship {
   None,
@@ -128,6 +131,78 @@ class ArcaneContract {
     }
 
     return a;
+  }
+
+  Future<void> onMessageSingle(
+      Wallet w, EthereumAddress otherMember, MessageCallback cb) async {
+    EthereumAddress addr = await w.privateKey.extractAddress();
+
+    ArcaneConnect.connect()
+        .events(FilterOptions.events(contract: contract, event: messageEvent))
+        .where((event) {
+          List<dynamic> data =
+              messageEvent.decodeResults(event.topics, event.data);
+          EthereumAddress from = data[0] as EthereumAddress;
+          EthereumAddress to = data[1] as EthereumAddress;
+          String message = data[2] as String;
+
+          if ((from.hex == otherMember.hex && to.hex == addr.hex)) {
+            return true;
+          }
+          return false;
+        })
+        .take(1)
+        .map((event) {
+          List<dynamic> data =
+              messageEvent.decodeResults(event.topics, event.data);
+          EthereumAddress from = data[0] as EthereumAddress;
+          EthereumAddress to = data[1] as EthereumAddress;
+          String message = data[2] as String;
+          return ArcaneMessage()
+            ..recipient = to
+            ..sender = from
+            ..message = message;
+        })
+        .listen((event) {
+          cb(event);
+        });
+  }
+
+  Future<Stream<ArcaneMessage>> getMessages(
+      Wallet w, EthereumAddress otherMember, BlockWalkerProgress p) async {
+    EthereumAddress addr = await w.privateKey.extractAddress();
+    int start1 = await getSignupBlock(addr);
+    int start2 = await getSignupBlock(otherMember);
+    List<ArcaneMessage> messages = List<ArcaneMessage>();
+    Completer<List<ArcaneMessage>> c = Completer();
+    return streamLogs(
+        FilterOptions.events(
+            contract: contract,
+            event: messageEvent,
+            fromBlock: BlockNum.exact(min(start1, start2)),
+            toBlock: BlockNum.current()),
+        p,
+        () => c.complete(messages)).where((event) {
+      List<dynamic> data = messageEvent.decodeResults(event.topics, event.data);
+      EthereumAddress from = data[0] as EthereumAddress;
+      EthereumAddress to = data[1] as EthereumAddress;
+      String message = data[2] as String;
+
+      if ((from.hex == otherMember.hex && to.hex == addr.hex) ||
+          (to.hex == otherMember.hex && from.hex == addr.hex)) {
+        return true;
+      }
+      return false;
+    }).map((event) {
+      List<dynamic> data = messageEvent.decodeResults(event.topics, event.data);
+      EthereumAddress from = data[0] as EthereumAddress;
+      EthereumAddress to = data[1] as EthereumAddress;
+      String message = data[2] as String;
+      return ArcaneMessage()
+        ..recipient = to
+        ..sender = from
+        ..message = message;
+    });
   }
 
   Future<List<EthereumAddress>> getContactRequests(

@@ -3,6 +3,7 @@ import 'package:arcane_chat/arcane_add_contact.dart';
 import 'package:arcane_chat/arcane_connect.dart';
 import 'package:arcane_chat/arcane_messenger.dart';
 import 'package:arcane_chat/arcane_tx_waiter.dart';
+import 'package:arcane_chat/arcane_unlocker.dart';
 import 'package:arcane_chat/arcane_wallet_view.dart';
 import 'package:arcane_chat/arcaneamount.dart';
 import 'package:arcane_chat/satchel.dart';
@@ -137,6 +138,8 @@ class _ArcaneViewState extends State<ArcaneView> {
 
   @override
   Widget build(BuildContext context) {
+    ArcaneSatchelUnlocker.walletCache[widget.satchel.id] = widget.wallet;
+
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.person_add),

@@ -5,6 +5,7 @@ import 'package:web3dart/credentials.dart';
 
 class ArcaneSatchelUnlocker extends StatefulWidget {
   final Satchel satchel;
+  static Map<String, Wallet> walletCache = Map<String, Wallet>();
 
   ArcaneSatchelUnlocker({this.satchel});
 
@@ -17,6 +18,19 @@ class _ArcaneSatchelUnlockerState extends State<ArcaneSatchelUnlocker> {
 
   @override
   Widget build(BuildContext context) {
+    if (ArcaneSatchelUnlocker.walletCache.containsKey(widget.satchel.id)) {
+      Future.delayed(
+          Duration(milliseconds: 50),
+          () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ArcaneView(
+                        satchel: widget.satchel,
+                        wallet: ArcaneSatchelUnlocker
+                            .walletCache[widget.satchel.id],
+                      ))));
+    }
+
     return Scaffold(
         backgroundColor: Theme.of(context).primaryColor,
         body: Center(
