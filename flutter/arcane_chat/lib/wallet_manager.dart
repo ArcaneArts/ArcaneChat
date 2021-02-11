@@ -42,17 +42,18 @@ class WalletManager {
     int g = 0;
     int x = 0;
     int z = 0;
-    Random rbuf = Random(-4483386 * c);
-    Random rbufx = Random(83386 + c);
+    Random rbuf = Random(-Random.secure().nextInt(234595) * c);
+    Random rbufx = Random(83386 + c + Random.secure().nextInt(222222));
     z += rbuf.nextInt(ma) % 2 == 0 ? rbuf.nextInt(ma) : rbuf.nextInt(mi);
 
     for (int i = 0; i < c; i++) {
       Random rx = Random((c * i) + c - 495);
-      Random rx2 = Random((c * (i * 2)) - c + 415);
+      Random rx2 = Random((c * (i * 2)) - c + Random.secure().nextInt(335));
       z += rbuf.nextInt(ma) % 2 == 0 ? rx.nextInt(ma) : rx.nextInt(mi);
       z += rbufx.nextInt(ma) % 2 == 0 ? rx2.nextInt(ma) : rx2.nextInt(mi);
       rbuf = Random(z + x + c + g + (ma - mi));
-      rbufx = Random(x * z - c - g + (ma - mi) * 235);
+      rbufx = Random(
+          x * z - c - g + (ma - mi) * (Random.secure().nextInt(222) + 20));
     }
 
     return new Wallet.createNew(
