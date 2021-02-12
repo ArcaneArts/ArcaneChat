@@ -23,6 +23,16 @@ class _ArcaneSendState extends State<ArcaneSend> {
   TextEditingController tc = TextEditingController(text: "");
   TextEditingController tca = TextEditingController(text: "");
 
+  int len() {
+    try {
+      return tc.text.length;
+    } catch (e) {}
+    try {
+      return tc.value.text.length;
+    } catch (e) {}
+    return 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,7 +84,9 @@ class _ArcaneSendState extends State<ArcaneSend> {
                                             Constant.MANA_PER_ETH)
                                         .toInt() +
                                     3;
-                                int maxMana = myMana - gasMana;
+                                int maxMana = myMana - gasMana < 0
+                                    ? 0
+                                    : (myMana - gasMana);
                                 int totalManaCost = setMana + gasMana;
 
                                 return Column(
@@ -150,8 +162,7 @@ class _ArcaneSendState extends State<ArcaneSend> {
                                         TextButton(
                                           child: Text(
                                               "Send ${nf.format(setMana)} Mana"),
-                                          onPressed: (tc.text.length ?? 0) ==
-                                                      42 &&
+                                          onPressed: (len() ?? 0) == 42 &&
                                                   setMana > 0 &&
                                                   totalManaCost <= myMana
                                               ? () => Navigator.push(

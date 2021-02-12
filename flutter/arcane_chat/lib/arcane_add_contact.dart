@@ -136,7 +136,7 @@ class _ArcaneAddContactState extends State<ArcaneAddContact> {
                                                               MaterialPageRoute(
                                                                   builder: (context) =>
                                                                       ArcaneTxWaiter(
-                                                                        waiter: ArcaneConnect.waitForTx(ArcaneConnect.getContract().addContact(
+                                                                        waiter: ArcaneConnect.waitForTx(ArcaneConnect.getContract().requestContact(
                                                                             widget.wallet,
                                                                             EthereumAddress.fromHex(tc.value.text),
                                                                             "nocipher")),

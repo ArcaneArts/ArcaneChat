@@ -9,6 +9,7 @@ import 'package:arcane_chat/arcaneamount.dart';
 import 'package:arcane_chat/satchel.dart';
 import 'package:arcane_chat/wallet_xt.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:web3dart/web3dart.dart';
 
 class ArcaneView extends StatefulWidget {
@@ -141,7 +142,7 @@ class _ArcaneViewState extends State<ArcaneView> {
   @override
   Widget build(BuildContext context) {
     ArcaneSatchelUnlocker.walletCache[widget.satchel.id] = widget.wallet;
-
+    NumberFormat nf = NumberFormat();
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.person_add),
@@ -260,8 +261,14 @@ class _ArcaneViewState extends State<ArcaneView> {
                                           ),
                                         ),
                                         Text(
-                                          "Please deposit at least ${minmana.data * 4} Mana to start using the Arcane!",
+                                          "Please deposit at least ${nf.format(minmana.data)} Mana to start using the Arcane!",
                                           textAlign: TextAlign.center,
+                                        ),
+                                        TextButton(
+                                          child: Text("Check again"),
+                                          onPressed: () {
+                                            setState(() {});
+                                          },
                                         )
                                       ],
                                     ),
@@ -292,7 +299,7 @@ class _ArcaneViewState extends State<ArcaneView> {
                                                 ArcaneConnect.waitForTx(
                                                         ArcaneConnect
                                                                 .getContract()
-                                                            .createUser(
+                                                            .becomeMage(
                                                                 widget.wallet,
                                                                 widget.satchel
                                                                     .name))
@@ -304,7 +311,7 @@ class _ArcaneViewState extends State<ArcaneView> {
                                                 });
                                               }),
                                           child: Text(
-                                              "Spend ${minmana.data} Mana"))
+                                              "Spend ${nf.format(minmana.data)} Mana"))
                                     ],
                                   ),
                                 ),

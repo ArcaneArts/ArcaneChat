@@ -19,8 +19,9 @@ class ArcaneConnect {
     EtherAmount fee = EtherAmount.fromUnitAndValue(
         EtherUnit.gwei, (gasPrice * Constant.GAS_LIMIT_SEND).toInt());
     return (Constant.MANA_PER_ETH *
-            fee.getValueInUnit(EtherUnit.ether).toDouble())
-        .toInt();
+                fee.getValueInUnit(EtherUnit.ether).toDouble())
+            .toInt() +
+        Constant.TIP_IN_MANA;
   }
 
   static Future<bool> waitForTx(Future<String> f) {

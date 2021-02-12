@@ -18,15 +18,15 @@ enum ArcaneRelationship { None, OutgoingRequest, IncomingRequest, Contacts }
 class ArcaneContract {
   DeployedContract contract;
   ContractEvent nameChangeEvent;
-  ContractEvent newUserEvent;
+  ContractEvent newMageEvent;
   ContractEvent messageEvent;
-  ContractEvent addContactEvent;
+  ContractEvent requestContactEvent;
   ContractEvent acceptContactEvent;
   ContractEvent declineContactEvent;
-  ContractFunction createUserFunction;
+  ContractFunction becomeMageFunction;
   ContractFunction changeNameFunction;
   ContractFunction sendMessageFunction;
-  ContractFunction addContactFunction;
+  ContractFunction requestContactFunction;
   ContractFunction acceptContactFunction;
   ContractFunction declineContactFunction;
   ContractFunction getRelationFunction;
@@ -43,7 +43,6 @@ class ArcaneContract {
   ContractFunction getStatUsersFunction;
   ContractFunction getStatConnectionsFunction;
   ContractFunction isGrandArchmageFunction;
-
   ContractFunction adminTransferGrandArchmageFunction;
   ContractFunction adminUpdateManaValueFunction;
   ContractFunction adminUpdateTipFunction;
@@ -54,15 +53,15 @@ class ArcaneContract {
           ContractAbi.fromJson(Constant.CONTRACT_ABI, 'Arcane'),
           EthereumAddress.fromHex(Constant.CONTRACT_ADDRESS));
     c.nameChangeEvent = c.contract.event("nameChangeEvent");
-    c.newUserEvent = c.contract.event("newUserEvent");
+    c.newMageEvent = c.contract.event("newMageEvent");
     c.messageEvent = c.contract.event("messageEvent");
-    c.addContactEvent = c.contract.event("addContactEvent");
+    c.requestContactEvent = c.contract.event("requestContactEvent");
     c.acceptContactEvent = c.contract.event("acceptContactEvent");
     c.declineContactEvent = c.contract.event("declineContactEvent");
     c.getStatMessagesFunction = c.contract.function("getStatMessages");
     c.getStatUsersFunction = c.contract.function("getStatUsers");
     c.getStatConnectionsFunction = c.contract.function("getStatConnections");
-    c.createUserFunction = c.contract.function("createUser");
+    c.becomeMageFunction = c.contract.function("becomeMage");
     c.changeNameFunction = c.contract.function("changeName");
     c.sendMessageFunction = c.contract.function("sendMessage");
     c.getManaValueFunction = c.contract.function("getManaValue");
@@ -70,7 +69,7 @@ class ArcaneContract {
     c.getTipInWeiFunction = c.contract.function("getTipInWei");
     c.getNameFunction = c.contract.function("getName");
     c.isUserFunction = c.contract.function("isUser");
-    c.addContactFunction = c.contract.function("addContact");
+    c.requestContactFunction = c.contract.function("requestContact");
     c.acceptContactFunction = c.contract.function("acceptContact");
     c.declineContactFunction = c.contract.function("declineContact");
     c.getRelationFunction = c.contract.function("getRelation");
@@ -225,13 +224,13 @@ class ArcaneContract {
     streamLogs(
         FilterOptions.events(
             contract: contract,
-            event: addContactEvent,
+            event: requestContactEvent,
             fromBlock: BlockNum.exact(start),
             toBlock: BlockNum.current()),
         p,
         () => c.complete(addrs)).listen((event) {
       List<dynamic> data =
-          addContactEvent.decodeResults(event.topics, event.data);
+          requestContactEvent.decodeResults(event.topics, event.data);
       EthereumAddress from = data[0] as EthereumAddress;
       EthereumAddress to = data[1] as EthereumAddress;
 
@@ -311,7 +310,7 @@ class ArcaneContract {
               parameters: [user]),
           chainId: Constant.CHAIN_ID);
 
-  Future<String> addContact(
+  Future<String> requestContact(
           Wallet me, EthereumAddress user, String cipher) async =>
       ArcaneConnect.connect().sendTransaction(
           me.privateKey,
@@ -320,7 +319,7 @@ class ArcaneContract {
               maxGas: Constant.GAS_LIMIT_SEND.toInt(),
               gasPrice: await ArcaneConnect.connect().getGasPrice(),
               contract: contract,
-              function: addContactFunction,
+              function: requestContactFunction,
               parameters: [user, cipher]),
           chainId: Constant.CHAIN_ID);
 
@@ -349,7 +348,7 @@ class ArcaneContract {
               parameters: [to, message]),
           chainId: Constant.CHAIN_ID);
 
-  Future<String> createUser(Wallet me, String name) async =>
+  Future<String> becomeMage(Wallet me, String name) async =>
       ArcaneConnect.connect().sendTransaction(
           me.privateKey,
           Transaction.callContract(
@@ -357,7 +356,7 @@ class ArcaneContract {
               maxGas: Constant.GAS_LIMIT_SEND.toInt(),
               gasPrice: await ArcaneConnect.connect().getGasPrice(),
               contract: contract,
-              function: createUserFunction,
+              function: becomeMageFunction,
               parameters: [name]),
           chainId: Constant.CHAIN_ID);
 
