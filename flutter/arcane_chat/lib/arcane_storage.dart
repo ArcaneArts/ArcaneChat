@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:arcane_chat/constant.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
@@ -36,6 +37,7 @@ class ArcaneStorage {
 
     await open("settings", "hive_key_settings");
     await open("wallets", "hive_key_wallets");
+    await Constant.init();
     ready = true;
 
     return true;

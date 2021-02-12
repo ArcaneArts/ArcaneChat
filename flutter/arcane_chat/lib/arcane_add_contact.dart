@@ -138,7 +138,8 @@ class _ArcaneAddContactState extends State<ArcaneAddContact> {
                                                                       ArcaneTxWaiter(
                                                                         waiter: ArcaneConnect.waitForTx(ArcaneConnect.getContract().addContact(
                                                                             widget.wallet,
-                                                                            EthereumAddress.fromHex(tc.value.text))),
+                                                                            EthereumAddress.fromHex(tc.value.text),
+                                                                            "nocipher")),
                                                                       ))).then(
                                                               (value) {
                                                             ScaffoldMessenger
@@ -156,9 +157,6 @@ class _ArcaneAddContactState extends State<ArcaneAddContact> {
                                             );
                                           },
                                         );
-                                      } else if (rel.data ==
-                                          ArcaneRelationship.Blocked) {
-                                        return Text("Blocked!");
                                       } else if (rel.data ==
                                           ArcaneRelationship.IncomingRequest) {
                                         return Text(
