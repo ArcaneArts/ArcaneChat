@@ -13,13 +13,7 @@ typedef BlockWalkerProgress(double progress);
 
 typedef MessageCallback(ArcaneMessage msg);
 
-enum ArcaneRelationship {
-  None,
-  OutgoingRequest,
-  IncomingRequest,
-  Contacts,
-  Blocked
-}
+enum ArcaneRelationship { None, OutgoingRequest, IncomingRequest, Contacts }
 
 class ArcaneContract {
   DeployedContract contract;
@@ -29,22 +23,30 @@ class ArcaneContract {
   ContractEvent addContactEvent;
   ContractEvent acceptContactEvent;
   ContractEvent declineContactEvent;
-  ContractEvent blockContactEvent;
-  ContractEvent unblockContactEvent;
   ContractFunction createUserFunction;
   ContractFunction changeNameFunction;
   ContractFunction sendMessageFunction;
   ContractFunction addContactFunction;
   ContractFunction acceptContactFunction;
   ContractFunction declineContactFunction;
-  ContractFunction blockContactFunction;
-  ContractFunction unblockContactFunction;
   ContractFunction getRelationFunction;
   ContractFunction isUserFunction;
   ContractFunction getNameFunction;
+  ContractFunction getCipherFunction;
   ContractFunction getSignupBlockFunction;
   ContractFunction getLastSendingBlockFunction;
   ContractFunction getLastReceivingBlockFunction;
+  ContractFunction getManaValueFunction;
+  ContractFunction getTipFunction;
+  ContractFunction getTipInWeiFunction;
+  ContractFunction getStatMessagesFunction;
+  ContractFunction getStatUsersFunction;
+  ContractFunction getStatConnectionsFunction;
+  ContractFunction isGrandArchmageFunction;
+
+  ContractFunction adminTransferGrandArchmageFunction;
+  ContractFunction adminUpdateManaValueFunction;
+  ContractFunction adminUpdateTipFunction;
 
   static ArcaneContract connect() {
     ArcaneContract c = ArcaneContract()
@@ -57,20 +59,29 @@ class ArcaneContract {
     c.addContactEvent = c.contract.event("addContactEvent");
     c.acceptContactEvent = c.contract.event("acceptContactEvent");
     c.declineContactEvent = c.contract.event("declineContactEvent");
-    c.blockContactEvent = c.contract.event("blockContactEvent");
-    c.unblockContactEvent = c.contract.event("unblockContactEvent");
+    c.getStatMessagesFunction = c.contract.function("getStatMessages");
+    c.getStatUsersFunction = c.contract.function("getStatUsers");
+    c.getStatConnectionsFunction = c.contract.function("getStatConnections");
     c.createUserFunction = c.contract.function("createUser");
     c.changeNameFunction = c.contract.function("changeName");
     c.sendMessageFunction = c.contract.function("sendMessage");
+    c.getManaValueFunction = c.contract.function("getManaValue");
+    c.getTipFunction = c.contract.function("getTip");
+    c.getTipInWeiFunction = c.contract.function("getTipInWei");
     c.getNameFunction = c.contract.function("getName");
     c.isUserFunction = c.contract.function("isUser");
     c.addContactFunction = c.contract.function("addContact");
     c.acceptContactFunction = c.contract.function("acceptContact");
     c.declineContactFunction = c.contract.function("declineContact");
-    c.blockContactFunction = c.contract.function("blockContact");
-    c.unblockContactFunction = c.contract.function("unblockContact");
     c.getRelationFunction = c.contract.function("getRelation");
+    c.getCipherFunction = c.contract.function("getCipher");
     c.getSignupBlockFunction = c.contract.function("getSignupBlock");
+    c.isGrandArchmageFunction = c.contract.function("isGrandArchmage");
+    c.adminTransferGrandArchmageFunction =
+        c.contract.function("adminTransferGrandArchmage");
+    c.adminUpdateManaValueFunction =
+        c.contract.function("adminUpdateManaValue");
+    c.adminUpdateTipFunction = c.contract.function("adminUpdateTip");
     c.getLastSendingBlockFunction = c.contract.function("getLastSendingBlock");
     c.getLastReceivingBlockFunction =
         c.contract.function("getLastReceivingBlock");
@@ -275,21 +286,24 @@ class ArcaneContract {
     done();
   }
 
-  Future<String> acceptContact(Wallet me, EthereumAddress user) async =>
+  Future<String> acceptContact(
+          Wallet me, EthereumAddress user, String cipher) async =>
       ArcaneConnect.connect().sendTransaction(
           me.privateKey,
           Transaction.callContract(
+              value: Constant.TIP,
               maxGas: Constant.GAS_LIMIT_SEND.toInt(),
               gasPrice: await ArcaneConnect.connect().getGasPrice(),
               contract: contract,
               function: acceptContactFunction,
-              parameters: [user]),
+              parameters: [user, cipher]),
           chainId: Constant.CHAIN_ID);
 
   Future<String> declineContact(Wallet me, EthereumAddress user) async =>
       ArcaneConnect.connect().sendTransaction(
           me.privateKey,
           Transaction.callContract(
+              value: Constant.TIP,
               maxGas: Constant.GAS_LIMIT_SEND.toInt(),
               gasPrice: await ArcaneConnect.connect().getGasPrice(),
               contract: contract,
@@ -297,43 +311,24 @@ class ArcaneContract {
               parameters: [user]),
           chainId: Constant.CHAIN_ID);
 
-  Future<String> addContact(Wallet me, EthereumAddress user) async =>
+  Future<String> addContact(
+          Wallet me, EthereumAddress user, String cipher) async =>
       ArcaneConnect.connect().sendTransaction(
           me.privateKey,
           Transaction.callContract(
+              value: Constant.TIP,
               maxGas: Constant.GAS_LIMIT_SEND.toInt(),
               gasPrice: await ArcaneConnect.connect().getGasPrice(),
               contract: contract,
               function: addContactFunction,
-              parameters: [user]),
-          chainId: Constant.CHAIN_ID);
-
-  Future<String> blockContact(Wallet me, EthereumAddress user) async =>
-      ArcaneConnect.connect().sendTransaction(
-          me.privateKey,
-          Transaction.callContract(
-              maxGas: Constant.GAS_LIMIT_SEND.toInt(),
-              gasPrice: await ArcaneConnect.connect().getGasPrice(),
-              contract: contract,
-              function: blockContactFunction,
-              parameters: [user]),
-          chainId: Constant.CHAIN_ID);
-
-  Future<String> unblockContact(Wallet me, EthereumAddress user) async =>
-      ArcaneConnect.connect().sendTransaction(
-          me.privateKey,
-          Transaction.callContract(
-              maxGas: Constant.GAS_LIMIT_SEND.toInt(),
-              gasPrice: await ArcaneConnect.connect().getGasPrice(),
-              contract: contract,
-              function: unblockContactFunction,
-              parameters: [user]),
+              parameters: [user, cipher]),
           chainId: Constant.CHAIN_ID);
 
   Future<String> changeName(Wallet me, String name) async =>
       ArcaneConnect.connect().sendTransaction(
           me.privateKey,
           Transaction.callContract(
+              value: Constant.TIP,
               maxGas: Constant.GAS_LIMIT_SEND.toInt(),
               gasPrice: await ArcaneConnect.connect().getGasPrice(),
               contract: contract,
@@ -346,6 +341,7 @@ class ArcaneContract {
       ArcaneConnect.connect().sendTransaction(
           me.privateKey,
           Transaction.callContract(
+              value: Constant.TIP,
               maxGas: Constant.GAS_LIMIT_SEND.toInt(),
               gasPrice: await ArcaneConnect.connect().getGasPrice(),
               contract: contract,
@@ -357,11 +353,46 @@ class ArcaneContract {
       ArcaneConnect.connect().sendTransaction(
           me.privateKey,
           Transaction.callContract(
+              value: Constant.TIP,
               maxGas: Constant.GAS_LIMIT_SEND.toInt(),
               gasPrice: await ArcaneConnect.connect().getGasPrice(),
               contract: contract,
               function: createUserFunction,
               parameters: [name]),
+          chainId: Constant.CHAIN_ID);
+
+  Future<String> adminTransferGrandArchmage(
+          Wallet me, EthereumAddress newmage) async =>
+      ArcaneConnect.connect().sendTransaction(
+          me.privateKey,
+          Transaction.callContract(
+              maxGas: Constant.GAS_LIMIT_SEND.toInt(),
+              gasPrice: await ArcaneConnect.connect().getGasPrice(),
+              contract: contract,
+              function: adminTransferGrandArchmageFunction,
+              parameters: [newmage]),
+          chainId: Constant.CHAIN_ID);
+
+  Future<String> adminUpdateManaValue(Wallet me, int valueInWei) async =>
+      ArcaneConnect.connect().sendTransaction(
+          me.privateKey,
+          Transaction.callContract(
+              maxGas: Constant.GAS_LIMIT_SEND.toInt(),
+              gasPrice: await ArcaneConnect.connect().getGasPrice(),
+              contract: contract,
+              function: adminUpdateManaValueFunction,
+              parameters: [valueInWei]),
+          chainId: Constant.CHAIN_ID);
+
+  Future<String> adminUpdateTip(Wallet me, int tipInMana) async =>
+      ArcaneConnect.connect().sendTransaction(
+          me.privateKey,
+          Transaction.callContract(
+              maxGas: Constant.GAS_LIMIT_SEND.toInt(),
+              gasPrice: await ArcaneConnect.connect().getGasPrice(),
+              contract: contract,
+              function: adminUpdateTipFunction,
+              parameters: [tipInMana]),
           chainId: Constant.CHAIN_ID);
 
   Future<int> getSignupBlock(EthereumAddress me) async =>
@@ -384,6 +415,36 @@ class ArcaneContract {
           function: getLastSendingBlockFunction,
           params: [me, other]).then((value) => (value[0] as BigInt).toInt());
 
+  Future<int> getManaValue() async => ArcaneConnect.connect().call(
+      contract: contract,
+      function: getManaValueFunction,
+      params: []).then((value) => (value[0] as BigInt).toInt());
+
+  Future<int> getTip() async => ArcaneConnect.connect().call(
+      contract: contract,
+      function: getTipFunction,
+      params: []).then((value) => (value[0] as BigInt).toInt());
+
+  Future<int> getTipInWei() async => ArcaneConnect.connect().call(
+      contract: contract,
+      function: getTipInWeiFunction,
+      params: []).then((value) => (value[0] as BigInt).toInt());
+
+  Future<int> getStatMessages() async => ArcaneConnect.connect().call(
+      contract: contract,
+      function: getStatMessagesFunction,
+      params: []).then((value) => (value[0] as BigInt).toInt());
+
+  Future<int> getStatConnections() async => ArcaneConnect.connect().call(
+      contract: contract,
+      function: getStatConnectionsFunction,
+      params: []).then((value) => (value[0] as BigInt).toInt());
+
+  Future<int> getStatUsers() async => ArcaneConnect.connect().call(
+      contract: contract,
+      function: getStatUsersFunction,
+      params: []).then((value) => (value[0] as BigInt).toInt());
+
   Future<String> getName(EthereumAddress a) async =>
       ArcaneConnect.connect().call(
           contract: contract,
@@ -394,6 +455,18 @@ class ArcaneContract {
       contract: contract,
       function: isUserFunction,
       params: [a]).then((value) => value[0] as bool);
+
+  Future<bool> isGrandArchmage(EthereumAddress a) async =>
+      ArcaneConnect.connect().call(
+          contract: contract,
+          function: isGrandArchmageFunction,
+          params: [a]).then((value) => value[0] as bool);
+
+  Future<String> getCipher(EthereumAddress me, EthereumAddress other) async =>
+      ArcaneConnect.connect().call(
+          contract: contract,
+          function: getCipherFunction,
+          params: [me, other]).then((value) => value.toString());
 
   Future<ArcaneRelationship> getRelation(
           EthereumAddress me, EthereumAddress other) async =>
