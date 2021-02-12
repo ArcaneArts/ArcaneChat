@@ -22,6 +22,12 @@ class Constant {
     }
   }
 
+  static int getManaFromEther(EtherAmount a) =>
+      (a.getInWei.toDouble() / MANA_WEI_VALUE.toDouble()).round();
+
+  static EtherAmount getEtherFromMana(int mana) =>
+      EtherAmount.fromUnitAndValue(EtherUnit.wei, MANA_WEI_VALUE * mana);
+
   static final int BLOCK_WALK_BATCH_SIZE = 10000; // 4 blocks/m 240 blocks/h
   static final int SEED_BITS = 256;
   static final double GAS_LIMIT_SEND = (300 * 1000).toDouble();
