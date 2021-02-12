@@ -73,13 +73,17 @@ class _ArcaneMessengerState extends State<ArcaneMessenger> {
   ScrollController sc = ScrollController();
   List<ArcaneMessage> messages = List<ArcaneMessage>();
   TextEditingController tc = TextEditingController();
+  FocusNode fn = FocusNode();
+  int desync = 0;
 
   bool send() {
+    desync++;
     String v = tc.value.text.trim();
     if (v.isEmpty) {
       return false;
     }
 
+    fn.requestFocus();
     widget.wallet.privateKey.extractAddress().then((value) {
       Future<String> pend = ArcaneConnect.getContract()
           .sendMessage(widget.wallet, widget.recipient, v);
@@ -105,7 +109,7 @@ class _ArcaneMessengerState extends State<ArcaneMessenger> {
       Future.delayed(
           Duration(milliseconds: 100),
           () => sc.animateTo(sc.position.maxScrollExtent,
-              duration: Duration(milliseconds: 1250),
+              duration: Duration(milliseconds: 1475),
               curve: Curves.easeInOutExpo));
     } catch (e) {}
 
@@ -180,6 +184,8 @@ class _ArcaneMessengerState extends State<ArcaneMessenger> {
                             Flexible(
                                 child: TextField(
                               controller: tc,
+                              focusNode: fn,
+                              autofocus: true,
                               style: TextStyle(fontSize: 20),
                               decoration: InputDecoration(
                                   hintText: "Type your message...",
@@ -222,6 +228,7 @@ class _ArcaneMessengerState extends State<ArcaneMessenger> {
         (msg) {
       setState(() {
         messages.add(msg);
+        desync++;
       });
       beginListening();
     });

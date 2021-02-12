@@ -162,7 +162,7 @@ class _ArcaneSendState extends State<ArcaneSend> {
                                         TextButton(
                                           child: Text(
                                               "Send ${nf.format(setMana)} Mana"),
-                                          onPressed: (len() ?? 0) == 42 &&
+                                          onPressed: len() == 42 &&
                                                   setMana > 0 &&
                                                   totalManaCost <= myMana
                                               ? () => Navigator.push(
