@@ -70,6 +70,7 @@ class ArcaneMessenger extends StatefulWidget {
 
 class _ArcaneMessengerState extends State<ArcaneMessenger> {
   bool loading = false;
+  int nonce = 0;
   ScrollController sc = ScrollController();
   List<ArcaneMessage> messages = List<ArcaneMessage>();
   TextEditingController tc = TextEditingController();
@@ -86,7 +87,11 @@ class _ArcaneMessengerState extends State<ArcaneMessenger> {
     fn.requestFocus();
     widget.wallet.privateKey.extractAddress().then((value) {
       Future<String> pend = ArcaneConnect.getContract()
-          .sendMessage(widget.wallet, widget.recipient, v);
+          .sendMessage(widget.wallet, widget.recipient, v, nonce++)
+          .then((value) {
+        print(value);
+        return value;
+      });
 
       ArcaneMessage aa = ArcaneMessage()
         ..sender = value

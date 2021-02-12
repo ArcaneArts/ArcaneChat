@@ -336,7 +336,7 @@ class ArcaneContract {
           chainId: Constant.CHAIN_ID);
 
   Future<String> sendMessage(
-          Wallet me, EthereumAddress to, String message) async =>
+          Wallet me, EthereumAddress to, String message, int nonce) async =>
       ArcaneConnect.connect().sendTransaction(
           me.privateKey,
           Transaction.callContract(
@@ -344,6 +344,7 @@ class ArcaneContract {
               maxGas: Constant.GAS_LIMIT_SEND.toInt(),
               gasPrice: await ArcaneConnect.connect().getGasPrice(),
               contract: contract,
+              nonce: nonce,
               function: sendMessageFunction,
               parameters: [to, message]),
           chainId: Constant.CHAIN_ID);
