@@ -5,14 +5,14 @@ contract ArcaneChat {
     // Fired when someone changes their name
     event nameChangeEvent(address indexed from, string newName);
 
-    // Fired when a new user has joined Arcane
-    event newUserEvent(address indexed from);
+    // Fired when a new mage has joined Arcane
+    event newMageEvent(address indexed from);
 
     // Fired when a user sends a message to another user
     event messageEvent(address indexed from, address indexed to, string message);
 
     // Fired when a contact is added
-    event addContactEvent(address indexed from, address indexed to);
+    event requestContactEvent(address indexed from, address indexed to);
 
     // Fired when a contact is accepted
     event acceptContactEvent(address indexed from, address indexed to);
@@ -105,11 +105,11 @@ contract ArcaneChat {
     }
     
     // Allows a wallet to create a user account with arcane. Requires a name
-    function createUser(string memory name) public payable {
+    function becomeMage(string memory name) public payable {
         require(msg.value >= tip * manaValue, "Must contain at least 1 Mana in value.");
         require(users[msg.sender].exists == false, "You are already a member.");
         users[msg.sender] = User(true, name, block.number);
-        emit newUserEvent(msg.sender);
+        emit newMageEvent(msg.sender);
         emit nameChangeEvent(msg.sender, name);
         relations[msg.sender][msg.sender] = Relation.Contacts;
         statUsers++;
@@ -135,13 +135,13 @@ contract ArcaneChat {
 
     // Allows any user to request a contact (another user).
     // The user must add their write key for this contact
-    function addContact(address user, string memory cipherdata) public payable forusers  {
+    function requestContact(address user, string memory cipherdata) public payable forusers  {
         require(msg.value >= tip * manaValue, "Must contain at least 1 Mana in value.");
         require(relations[msg.sender][user] == Relation.None && relations[user][msg.sender] == Relation.None, "You or the recipient are already contacts, or pending contacts, or blocking.");
         relations[msg.sender][user] = Relation.OutgoingRequest;
         relations[user][msg.sender] = Relation.IncomingRequest;
         cipher[user][msg.sender] = cipherdata;
-        emit addContactEvent(msg.sender, user);
+        emit requestContactEvent(msg.sender, user);
     }
 
     // Allows any user to accept a contact from an existing outgoing contact request.
