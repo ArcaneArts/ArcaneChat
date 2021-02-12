@@ -56,8 +56,8 @@ class _ArcaneAccountSelectorState extends State<ArcaneAccountSelector> {
                     ListTile(
                       leading: Icon(Icons.add),
                       title: Text("Create Satchel"),
-                      subtitle:
-                          Text("Satchels contain a wallet & conversations."),
+                      subtitle: Text(
+                          "Satchels contain a wallet & conversations. This is using the Etherium Kovan Test Net!"),
                       onTap: () => Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
