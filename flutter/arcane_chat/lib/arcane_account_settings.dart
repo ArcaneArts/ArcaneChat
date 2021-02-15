@@ -36,7 +36,7 @@ class _ArcaneAccountSettingsState extends State<ArcaneAccountSettings> {
                   MaterialPageRoute(
                       builder: (context) => ArcaneAccountSelector()));
             },
-          )
+          ),
         ],
       ),
     );
