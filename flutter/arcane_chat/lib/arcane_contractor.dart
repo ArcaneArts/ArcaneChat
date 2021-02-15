@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:arcane_chat/arcane_connect.dart';
-import 'package:arcane_chat/arcane_message.dart';
+import 'package:arcane_chat/arcane_encryption.dart';
+import 'package:arcane_chat/arcane_messenger.dart';
 import 'package:arcane_chat/constant.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:web3dart/contracts.dart';
@@ -179,7 +180,10 @@ class ArcaneContract {
   }
 
   Future<Stream<ArcaneMessage>> getMessages(
-      Wallet w, EthereumAddress otherMember, BlockWalkerProgress p) async {
+      Wallet w,
+      EthereumAddress otherMember,
+      BlockWalkerProgress p,
+      Messenger messenger) async {
     EthereumAddress addr = await w.privateKey.extractAddress();
     int start1 = await getSignupBlock(addr);
     int start2 = await getSignupBlock(otherMember);
@@ -211,7 +215,10 @@ class ArcaneContract {
       return ArcaneMessage()
         ..recipient = to
         ..sender = from
-        ..message = message;
+        ..encrypted = true
+        ..message = from == otherMember
+            ? messenger.pullLeft(message)
+            : messenger.pullRight(message);
     });
   }
 
@@ -285,8 +292,7 @@ class ArcaneContract {
     done();
   }
 
-  Future<String> acceptContact(
-          Wallet me, EthereumAddress user, String cipher) async =>
+  Future<String> acceptContact(Wallet me, EthereumAddress user) async =>
       ArcaneConnect.connect().sendTransaction(
           me.privateKey,
           Transaction.callContract(
@@ -295,7 +301,10 @@ class ArcaneContract {
               gasPrice: await ArcaneConnect.connect().getGasPrice(),
               contract: contract,
               function: acceptContactFunction,
-              parameters: [user, cipher]),
+              parameters: [
+                user,
+                await ArcaneEncryption.publicKeyFor(me, user)
+              ]),
           chainId: Constant.CHAIN_ID);
 
   Future<String> declineContact(Wallet me, EthereumAddress user) async =>
@@ -310,8 +319,7 @@ class ArcaneContract {
               parameters: [user]),
           chainId: Constant.CHAIN_ID);
 
-  Future<String> requestContact(
-          Wallet me, EthereumAddress user, String cipher) async =>
+  Future<String> requestContact(Wallet me, EthereumAddress user) async =>
       ArcaneConnect.connect().sendTransaction(
           me.privateKey,
           Transaction.callContract(
@@ -320,7 +328,10 @@ class ArcaneContract {
               gasPrice: await ArcaneConnect.connect().getGasPrice(),
               contract: contract,
               function: requestContactFunction,
-              parameters: [user, cipher]),
+              parameters: [
+                user,
+                await ArcaneEncryption.publicKeyFor(me, user)
+              ]),
           chainId: Constant.CHAIN_ID);
 
   Future<String> changeName(Wallet me, String name) async =>

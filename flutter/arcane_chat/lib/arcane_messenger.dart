@@ -1,11 +1,19 @@
 import 'package:arcane_chat/arcane_connect.dart';
-import 'package:arcane_chat/arcane_message.dart';
+import 'package:arcane_chat/arcane_encryption.dart';
 import 'package:arcane_chat/arcaneamount.dart';
 import 'package:arcane_chat/satchel.dart';
 import 'package:arcane_chat/wallet_xt.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:web3dart/credentials.dart';
+
+class ArcaneMessage {
+  EthereumAddress sender;
+  EthereumAddress recipient;
+  String message;
+  bool encrypted = true;
+  bool pending = false;
+}
 
 class ArcaneBubble extends StatelessWidget {
   final String name;
@@ -76,14 +84,15 @@ class _ArcaneMessengerState extends State<ArcaneMessenger> {
   TextEditingController tc = TextEditingController();
   FocusNode fn = FocusNode();
   int desync = 0;
+  Messenger messenger;
 
   bool send() {
     desync++;
-    String v = tc.value.text.trim();
-    if (v.isEmpty) {
+    String inmsg = tc.value.text.trim();
+    if (inmsg.isEmpty) {
       return false;
     }
-
+    String v = messenger.push(inmsg);
     fn.requestFocus();
     widget.wallet.privateKey.extractAddress().then((value) {
       Future<String> pend = ArcaneConnect.getContract()
@@ -95,8 +104,9 @@ class _ArcaneMessengerState extends State<ArcaneMessenger> {
 
       ArcaneMessage aa = ArcaneMessage()
         ..sender = value
+        ..encrypted = false
         ..recipient = widget.recipient
-        ..message = v
+        ..message = inmsg
         ..pending = true;
       setState(() {
         messages.add(aa);
@@ -120,15 +130,17 @@ class _ArcaneMessengerState extends State<ArcaneMessenger> {
 
     if (!loading) {
       loading = true;
-      ArcaneConnect.getContract()
-          .getMessages(widget.wallet, widget.recipient,
-              (progress) => print("Scanning Messages: $progress"))
-          .then((value) => value.listen((event) {
-                setState(() {
-                  messages.add(event);
-                });
-              }))
-          .then((value) => beginListening());
+      Messenger.of(widget.wallet, widget.recipient)
+          .then((value) => messenger = value)
+          .then((value) => ArcaneConnect.getContract()
+              .getMessages(
+                  widget.wallet,
+                  widget.recipient,
+                  (progress) => print("Scanning Messages: $progress"),
+                  messenger)
+              .then((value) =>
+                  value.listen((event) => setState(() => messages.add(event))))
+              .then((value) => beginListening()));
     }
 
     return Scaffold(

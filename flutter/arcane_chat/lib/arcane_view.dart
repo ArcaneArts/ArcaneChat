@@ -114,9 +114,9 @@ class _ArcaneViewState extends State<ArcaneView> {
                                     waiter: ArcaneConnect.waitForTx(
                                         ArcaneConnect.getContract()
                                             .acceptContact(
-                                                widget.wallet,
-                                                contactRequests[pos],
-                                                "nocipher")),
+                                      widget.wallet,
+                                      contactRequests[pos],
+                                    )),
                                   ))).then((value) => setState(() {
                             load = false;
                             member = false;
