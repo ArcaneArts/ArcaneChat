@@ -4,15 +4,17 @@ import 'dart:typed_data';
 
 import 'package:arcane_chat/arcane_connect.dart';
 import 'package:arcane_chat/lzstring.dart';
+import 'package:arcane_chat/wallet_xt.dart';
 import 'package:asn1lib/asn1lib.dart';
-import 'package:fast_rsa/model/bridge.pb.dart';
-import 'package:fast_rsa/rsa.dart';
+import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pointycastle/export.dart';
 import 'package:web3dart/credentials.dart';
 
 class ArcaneEncryption {
   static Future<String> publicKeyFor(Wallet wallet, EthereumAddress to) async =>
-      encodePublicKey((await getRsaKeyPair(wallet, to)).publicKey);
+      encodePublicKey(
+          (await compute(getRsaKeyPair, <dynamic>[wallet, to])).publicKey);
 
   static String encodePublicKey(RSAPublicKey publicKey) =>
       Base64Codec.urlSafe().encode((ASN1Sequence()
@@ -80,33 +82,55 @@ class ArcaneEncryption {
         : output.sublist(0, outputOffset);
   }
 
-  static Future<AsymmetricKeyPair<PublicKey, PrivateKey>> getRsaKeyPair(
-      Wallet from, EthereumAddress to) async {
-    String h = await RSA.hash(
-        Base64Codec.urlSafe().encode(from.privateKey.privateKey) +
-            to.hex +
-            from.uuid,
-        Hash.HASH_SHA512);
-    List<int> m = h.codeUnits;
+  static String hashSha512(String msg) =>
+      sha512.convert(msg.codeUnits).toString();
 
-    Random rng = Random(129496666);
+  static String hashSha256(String msg) =>
+      sha256.convert(msg.codeUnits).toString();
+}
 
-    for (int i = 0; i < m.length; i++) {
-      rng = Random(rng.nextInt(8192 + i) * (i ~/ 32));
-    }
+AsymmetricKeyPair<PublicKey, PrivateKey> getRsaKeyPair(List<dynamic> data) {
+  Wallet from = data[0];
+  EthereumAddress to = data[1];
+  String h = sha512
+      .convert((Base64Codec.urlSafe().encode(from.privateKey.privateKey) +
+              to.hex +
+              from.uuid)
+          .codeUnits)
+      .toString();
+  List<int> m = h.codeUnits;
 
-    FortunaRandom secureRandom = FortunaRandom();
-    List<int> seeds = [];
-    for (int i = 0; i < 32; i++) {
-      seeds.add(rng.nextInt(255));
-    }
-    secureRandom.seed(new KeyParameter(Uint8List.fromList(seeds)));
-    var rsapars = new RSAKeyGeneratorParameters(BigInt.from(65537), 2048, 5);
-    var params = new ParametersWithRandom(rsapars, secureRandom);
-    var keyGenerator = new RSAKeyGenerator();
-    keyGenerator.init(params);
-    return keyGenerator.generateKeyPair();
+  Random rng = Random(129496666);
+
+  for (int i = 0; i < m.length; i++) {
+    rng = Random(rng.nextInt(8192 + i) * (i ~/ 32));
   }
+
+  FortunaRandom secureRandom = FortunaRandom();
+  List<int> seeds = [];
+  for (int i = 0; i < 32; i++) {
+    seeds.add(rng.nextInt(255));
+  }
+  secureRandom.seed(new KeyParameter(Uint8List.fromList(seeds)));
+  var rsapars = new RSAKeyGeneratorParameters(BigInt.from(65537), 2048, 5);
+  var params = new ParametersWithRandom(rsapars, secureRandom);
+  var keyGenerator = new RSAKeyGenerator();
+  keyGenerator.init(params);
+  return keyGenerator.generateKeyPair();
+}
+
+Future<Messenger> createMessenger(
+    Wallet wallet, EthereumAddress recipient) async {
+  AsymmetricKeyPair<PublicKey, PrivateKey> pair =
+      await compute(getRsaKeyPair, <dynamic>[wallet, recipient]);
+  EthereumAddress sender = wallet.getAddressSync();
+  return Messenger()
+    .._wallet = wallet
+    .._recipient = recipient
+    .._keypair = pair
+    .._sender = sender
+    .._recipientPublicKey = ArcaneEncryption.decodePublicKey(
+        await ArcaneConnect.getContract().getCipher(sender, recipient));
 }
 
 class Messenger {
@@ -117,14 +141,7 @@ class Messenger {
   AsymmetricKeyPair<PublicKey, PrivateKey> _keypair;
 
   static Future<Messenger> of(Wallet wallet, EthereumAddress recipient) async {
-    EthereumAddress sender = await wallet.privateKey.extractAddress();
-    return Messenger()
-      .._wallet = wallet
-      .._recipient = recipient
-      .._keypair = await ArcaneEncryption.getRsaKeyPair(wallet, recipient)
-      .._sender = sender
-      .._recipientPublicKey = ArcaneEncryption.decodePublicKey(
-          await ArcaneConnect.getContract().getCipher(sender, recipient));
+    return createMessenger(wallet, recipient);
   }
 
   // Receiver read

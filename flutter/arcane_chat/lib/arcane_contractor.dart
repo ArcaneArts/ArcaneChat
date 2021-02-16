@@ -293,84 +293,126 @@ class ArcaneContract {
   }
 
   Future<String> acceptContact(Wallet me, EthereumAddress user) async =>
-      ArcaneConnect.connect().sendTransaction(
-          me.privateKey,
-          Transaction.callContract(
-              value: Constant.TIP,
-              maxGas: Constant.GAS_LIMIT_SEND.toInt(),
-              gasPrice: await ArcaneConnect.connect().getGasPrice(),
-              contract: contract,
-              function: acceptContactFunction,
-              parameters: [
-                user,
-                await ArcaneEncryption.publicKeyFor(me, user)
-              ]),
-          chainId: Constant.CHAIN_ID);
+      ArcaneConnect.connect()
+          .sendTransaction(
+              me.privateKey,
+              Transaction.callContract(
+                  value: Constant.TIP,
+                  maxGas: Constant.GAS_LIMIT_SEND.toInt(),
+                  gasPrice: await ArcaneConnect.connect().getGasPrice(),
+                  contract: contract,
+                  function: acceptContactFunction,
+                  parameters: [
+                    user,
+                    await ArcaneEncryption.publicKeyFor(me, user)
+                  ]),
+              chainId: Constant.CHAIN_ID)
+          .catchError((v) {
+        print("acceptContact: ERROR ($v)");
+      }).then((value) {
+        print("acceptContact: " + value);
+        return value;
+      });
 
   Future<String> declineContact(Wallet me, EthereumAddress user) async =>
-      ArcaneConnect.connect().sendTransaction(
-          me.privateKey,
-          Transaction.callContract(
-              value: Constant.TIP,
-              maxGas: Constant.GAS_LIMIT_SEND.toInt(),
-              gasPrice: await ArcaneConnect.connect().getGasPrice(),
-              contract: contract,
-              function: declineContactFunction,
-              parameters: [user]),
-          chainId: Constant.CHAIN_ID);
+      ArcaneConnect.connect()
+          .sendTransaction(
+              me.privateKey,
+              Transaction.callContract(
+                  value: Constant.TIP,
+                  maxGas: Constant.GAS_LIMIT_SEND.toInt(),
+                  gasPrice: await ArcaneConnect.connect().getGasPrice(),
+                  contract: contract,
+                  function: declineContactFunction,
+                  parameters: [user]),
+              chainId: Constant.CHAIN_ID)
+          .catchError((v) {
+        print("declineContact: ERROR ($v)");
+      }).then((value) {
+        print("declineContact: " + value);
+        return value;
+      });
 
   Future<String> requestContact(Wallet me, EthereumAddress user) async =>
-      ArcaneConnect.connect().sendTransaction(
-          me.privateKey,
-          Transaction.callContract(
-              value: Constant.TIP,
-              maxGas: Constant.GAS_LIMIT_SEND.toInt(),
-              gasPrice: await ArcaneConnect.connect().getGasPrice(),
-              contract: contract,
-              function: requestContactFunction,
-              parameters: [
-                user,
-                await ArcaneEncryption.publicKeyFor(me, user)
-              ]),
-          chainId: Constant.CHAIN_ID);
+      ArcaneConnect.connect()
+          .sendTransaction(
+              me.privateKey,
+              Transaction.callContract(
+                  value: Constant.TIP,
+                  maxGas: Constant.GAS_LIMIT_SEND.toInt(),
+                  gasPrice: await ArcaneConnect.connect().getGasPrice(),
+                  contract: contract,
+                  function: requestContactFunction,
+                  parameters: [
+                    user,
+                    await ArcaneEncryption.publicKeyFor(me, user)
+                  ]),
+              chainId: Constant.CHAIN_ID)
+          .catchError((v) {
+        print("requestContact: ERROR ($v)");
+      }).then((value) {
+        print("requestContact: " + value);
+        return value;
+      });
 
   Future<String> changeName(Wallet me, String name) async =>
-      ArcaneConnect.connect().sendTransaction(
-          me.privateKey,
-          Transaction.callContract(
-              value: Constant.TIP,
-              maxGas: Constant.GAS_LIMIT_SEND.toInt(),
-              gasPrice: await ArcaneConnect.connect().getGasPrice(),
-              contract: contract,
-              function: changeNameFunction,
-              parameters: [name]),
-          chainId: Constant.CHAIN_ID);
+      ArcaneConnect.connect()
+          .sendTransaction(
+              me.privateKey,
+              Transaction.callContract(
+                  value: Constant.TIP,
+                  maxGas: Constant.GAS_LIMIT_SEND.toInt(),
+                  gasPrice: await ArcaneConnect.connect().getGasPrice(),
+                  contract: contract,
+                  function: changeNameFunction,
+                  parameters: [name]),
+              chainId: Constant.CHAIN_ID)
+          .catchError((v) {
+        print("changeName: ERROR ($v)");
+      }).then((value) {
+        print("changeName: " + value);
+        return value;
+      });
 
   Future<String> sendMessage(
           Wallet me, EthereumAddress to, String message, int nonce) async =>
-      ArcaneConnect.connect().sendTransaction(
-          me.privateKey,
-          Transaction.callContract(
-              value: Constant.TIP,
-              maxGas: Constant.GAS_LIMIT_SEND.toInt(),
-              gasPrice: await ArcaneConnect.connect().getGasPrice(),
-              contract: contract,
-              nonce: nonce,
-              function: sendMessageFunction,
-              parameters: [to, message]),
-          chainId: Constant.CHAIN_ID);
+      ArcaneConnect.connect()
+          .sendTransaction(
+              me.privateKey,
+              Transaction.callContract(
+                  value: Constant.TIP,
+                  maxGas: Constant.GAS_LIMIT_SEND.toInt(),
+                  gasPrice: await ArcaneConnect.connect().getGasPrice(),
+                  contract: contract,
+                  nonce: nonce,
+                  function: sendMessageFunction,
+                  parameters: [to, message]),
+              chainId: Constant.CHAIN_ID)
+          .catchError((v) {
+        print("sendMessage: ERROR ($v)");
+      }).then((value) {
+        print("sendMessage: " + value);
+        return value;
+      });
 
   Future<String> becomeMage(Wallet me, String name) async =>
-      ArcaneConnect.connect().sendTransaction(
-          me.privateKey,
-          Transaction.callContract(
-              value: Constant.TIP,
-              maxGas: Constant.GAS_LIMIT_SEND.toInt(),
-              gasPrice: await ArcaneConnect.connect().getGasPrice(),
-              contract: contract,
-              function: becomeMageFunction,
-              parameters: [name]),
-          chainId: Constant.CHAIN_ID);
+      ArcaneConnect.connect()
+          .sendTransaction(
+              me.privateKey,
+              Transaction.callContract(
+                  value: Constant.TIP,
+                  maxGas: Constant.GAS_LIMIT_SEND.toInt(),
+                  gasPrice: await ArcaneConnect.connect().getGasPrice(),
+                  contract: contract,
+                  function: becomeMageFunction,
+                  parameters: [name]),
+              chainId: Constant.CHAIN_ID)
+          .catchError((v) {
+        print("becomeMage: ERROR ($v)");
+      }).then((value) {
+        print("becomeMage: " + value);
+        return value;
+      });
 
   Future<String> adminTransferGrandArchmage(
           Wallet me, EthereumAddress newmage) async =>

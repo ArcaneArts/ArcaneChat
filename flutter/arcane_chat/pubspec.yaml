@@ -15,6 +15,7 @@ dependencies:
   encrypt: ^4.0.3
   pointycastle: ^1.0.2
   intl: ^0.16.1
+  crypto: ^2.1.5
   web3dart:
     git: https://github.com/simolus3/web3dart.git
 dev_dependencies:

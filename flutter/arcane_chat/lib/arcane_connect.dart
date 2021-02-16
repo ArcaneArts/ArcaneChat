@@ -59,19 +59,25 @@ class ArcaneConnect {
             0);
       });
 
-  static Future<bool> waitForTxHash(String value) async {
+  static Future<bool> waitForTxHash(String value, {int maxWait = 6}) async {
+    if (maxWait < 0) {
+      return false;
+    }
+
     TransactionInformation info = await connect()
         .getTransactionByHash(value)
         .onError((error, stackTrace) => null);
 
     if (info == null) {
-      print("Couldnt find Tx $value. Waiting 10s");
-      return Future.delayed(Duration(seconds: 10), () => waitForTxHash(value));
+      print("Couldnt find Tx $value. Waiting 5s");
+      return Future.delayed(Duration(seconds: 5),
+          () => waitForTxHash(value, maxWait: maxWait - 1));
     }
 
     if (info.blockNumber.isPending) {
-      print("Couldnt find real block for Tx $value. Waiting 6s");
-      return Future.delayed(Duration(seconds: 6), () => waitForTxHash(value));
+      print("Couldnt find real block for Tx $value. Waiting 3s");
+      return Future.delayed(Duration(seconds: 3),
+          () => waitForTxHash(value, maxWait: maxWait - 1));
     }
 
     int manaSpent = (EtherAmount.fromUnitAndValue(

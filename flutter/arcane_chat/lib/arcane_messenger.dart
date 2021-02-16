@@ -9,6 +9,7 @@ import 'package:web3dart/credentials.dart';
 
 class ArcaneMessage {
   EthereumAddress sender;
+  int time = DateTime.now().millisecondsSinceEpoch;
   EthereumAddress recipient;
   String message;
   bool encrypted = true;
@@ -78,7 +79,7 @@ class ArcaneMessenger extends StatefulWidget {
 
 class _ArcaneMessengerState extends State<ArcaneMessenger> {
   bool loading = false;
-  int nonce = 0;
+  bool loadingComplete = false;
   ScrollController sc = ScrollController();
   List<ArcaneMessage> messages = List<ArcaneMessage>();
   TextEditingController tc = TextEditingController();
@@ -96,12 +97,7 @@ class _ArcaneMessengerState extends State<ArcaneMessenger> {
     fn.requestFocus();
     widget.wallet.privateKey.extractAddress().then((value) {
       Future<String> pend = ArcaneConnect.getContract()
-          .sendMessage(widget.wallet, widget.recipient, v, nonce++)
-          .then((value) {
-        print(value);
-        return value;
-      });
-
+          .sendMessage(widget.wallet, widget.recipient, v, null);
       ArcaneMessage aa = ArcaneMessage()
         ..sender = value
         ..encrypted = false
@@ -112,7 +108,14 @@ class _ArcaneMessengerState extends State<ArcaneMessenger> {
         messages.add(aa);
       });
       ArcaneConnect.waitForTx(pend).then((value) => setState(() {
-            aa.pending = false;
+            if (value) {
+              aa.pending = false;
+            } else {
+              messages.removeWhere((element) =>
+                  aa.message == element.message && aa.time == element.time);
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Failed to send Message")));
+            }
           }));
     });
     return true;
@@ -130,6 +133,7 @@ class _ArcaneMessengerState extends State<ArcaneMessenger> {
 
     if (!loading) {
       loading = true;
+      loadingComplete = false;
       Messenger.of(widget.wallet, widget.recipient)
           .then((value) => messenger = value)
           .then((value) => ArcaneConnect.getContract()
@@ -140,7 +144,13 @@ class _ArcaneMessengerState extends State<ArcaneMessenger> {
                   messenger)
               .then((value) =>
                   value.listen((event) => setState(() => messages.add(event))))
-              .then((value) => beginListening()));
+              .then((value) => beginListening()))
+          .then((value) => loadingComplete = true)
+          .then((value) => Future.delayed(
+              Duration(milliseconds: 500),
+              () => sc.animateTo(sc.position.maxScrollExtent,
+                  duration: Duration(milliseconds: 1475),
+                  curve: Curves.easeInOutExpo)));
     }
 
     return Scaffold(
@@ -178,61 +188,74 @@ class _ArcaneMessengerState extends State<ArcaneMessenger> {
           return Column(
             children: [
               Flexible(
-                  child: ListView.builder(
-                controller: sc,
-                itemCount: messages.length,
-                itemBuilder: (context, pos) => ArcaneBubble(
-                  pending: messages[pos].pending,
-                  message: messages[pos].message,
-                  name: messages[pos].sender == widget.recipient
-                      ? widget.recipientName
-                      : null,
-                ),
-              )),
-              Flexible(
-                flex: 0,
-                child: Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(24))),
-                  child: ClipRRect(
-                      child: Padding(
-                        child: Row(
-                          children: [
-                            Flexible(
-                                child: TextField(
-                              controller: tc,
-                              focusNode: fn,
-                              autofocus: true,
-                              style: TextStyle(fontSize: 20),
-                              decoration: InputDecoration(
-                                  hintText: "Type your message...",
-                                  helperText: "     < ${manafee.data} Mana"),
-                              minLines: 1,
-                              maxLines: 5,
-                              keyboardType: TextInputType.name,
-                              maxLength: 1024,
-                              onSubmitted: (v) {
-                                if (send()) {
-                                  tc.text = "";
-                                }
-                              },
-                            )),
-                            Flexible(
-                                child: IconButton(
-                                    icon: Icon(Icons.send),
-                                    onPressed: () {
+                  child: loadingComplete
+                      ? ListView.builder(
+                          controller: sc,
+                          itemCount: messages.length,
+                          itemBuilder: (context, pos) => ArcaneBubble(
+                            pending: messages[pos].pending,
+                            message: messages[pos].message,
+                            name: messages[pos].sender == widget.recipient
+                                ? widget.recipientName
+                                : null,
+                          ),
+                        )
+                      : Center(
+                          child: Container(
+                            width: 100,
+                            height: 100,
+                            child: CircularProgressIndicator(),
+                          ),
+                        )),
+              loadingComplete
+                  ? Flexible(
+                      flex: 0,
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(24))),
+                        child: ClipRRect(
+                            child: Padding(
+                              child: Row(
+                                children: [
+                                  Flexible(
+                                      child: TextField(
+                                    controller: tc,
+                                    focusNode: fn,
+                                    autofocus: true,
+                                    style: TextStyle(fontSize: 20),
+                                    decoration: InputDecoration(
+                                        hintText: "Type your message...",
+                                        helperText:
+                                            "     < ${manafee.data} Mana"),
+                                    minLines: 1,
+                                    maxLines: 5,
+                                    keyboardType: TextInputType.name,
+                                    maxLength: 1024,
+                                    onSubmitted: (v) {
                                       if (send()) {
                                         tc.text = "";
                                       }
-                                    }),
-                                flex: 0)
-                          ],
-                        ),
-                        padding: EdgeInsets.only(left: 7, right: 7),
+                                    },
+                                  )),
+                                  Flexible(
+                                      child: IconButton(
+                                          icon: Icon(Icons.send),
+                                          onPressed: () {
+                                            if (send()) {
+                                              tc.text = "";
+                                            }
+                                          }),
+                                      flex: 0)
+                                ],
+                              ),
+                              padding: EdgeInsets.only(left: 7, right: 7),
+                            ),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(24))),
                       ),
-                      borderRadius: BorderRadius.all(Radius.circular(24))),
-                ),
-              )
+                    )
+                  : Container()
             ],
           );
         },
